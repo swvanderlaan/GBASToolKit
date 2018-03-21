@@ -1,2 +1,2 @@
-# GASToolKit
-A ToolKit to perform gene-based association studies using VEGAS or MAGMA
+# GBASToolKit
+A ToolKit to perform Gene-Based Association Studies using VEGAS or MAGMA

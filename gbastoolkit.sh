@@ -283,24 +283,24 @@ else
 			### FOR DEBUGGING LOCALLY -- Mac OS X
 			### Rscript ${SCRIPTS}/gwas.parser.R -p ${PROJECTDIR} -d ${SPLITFILE} -o ${OUTPUTDIRNAME}/${SUBPROJECTDIRNAME}/PARSED/${COHORT} 
 			echo "Rscript ${SCRIPTS}/gwas.parser.R -p ${PROJECTDIR} -d ${SPLITFILE} -o ${OUTPUTDIRNAME}/${SUBPROJECTDIRNAME}/PARSED/${COHORT} " > ${RAWDATACOHORT}/gwas.parser.${BASESPLITFILE}.sh
-# 			qsub -S /bin/bash -N gwas.parser.${BASESPLITFILE} -hold_jid run_metagwastoolkit -o ${RAWDATACOHORT}/gwas.parser.${BASESPLITFILE}.log -e ${RAWDATACOHORT}/gwas.parser.${BASESPLITFILE}.errors -l h_rt=${QRUNTIMEPARSER} -l h_vmem=${QMEMPARSER} -M ${QMAIL} -m ${QMAILOPTIONS} -cwd ${RAWDATACOHORT}/gwas.parser.${BASESPLITFILE}.sh
+			qsub -S /bin/bash -N gwas.parser.${BASESPLITFILE} -hold_jid run_metagwastoolkit -o ${RAWDATACOHORT}/gwas.parser.${BASESPLITFILE}.log -e ${RAWDATACOHORT}/gwas.parser.${BASESPLITFILE}.errors -l h_rt=${QRUNTIMEPARSER} -l h_vmem=${QMEMPARSER} -M ${QMAIL} -m ${QMAILOPTIONS} -cwd ${RAWDATACOHORT}/gwas.parser.${BASESPLITFILE}.sh
 			
-# 			echobold "#========================================================================================================"
-# 			echobold "#== CLEANING UP THE REFORMATTED GWAS DATA"
-# 			echobold "#========================================================================================================"
-# 			echobold "#"
-# 			echo ""
-# 			echo "* Cleaning harmonized data for [ ${BASESPLITFILE} ] file for cohort ${COHORT} with ${REFERENCE}"
-# 			echo "  using the following pre-specified settings:"
-# 			echo "  - MAF  = ${MAF}"
-# 			echo "  - MAC  = ${MAC}"
-# 			echo "  - HWE  = ${HWE}"
-# 			echo "  - INFO = ${INFO}"
-# 			echo "  - BETA = ${BETA}"
-# 			echo "  - SE   = ${SE}"
-# 			### FOR DEBUGGING LOCALLY -- Mac OS X
-# 			### ${SCRIPTS}/gwas.cleaner.R -d ${SPLITFILE}.ref.pdat -f ${BASESPLITFILE} -o ${RAWDATACOHORT} -e ${BETA} -s ${SE} -m ${MAF} -c ${MAC} -i ${INFO} -w ${HWE}
-# 			echo "${SCRIPTS}/gwas.cleaner.R -d ${SPLITFILE}.ref.pdat -f ${BASESPLITFILE} -o ${RAWDATACOHORT} -e ${BETA} -s ${SE} -m ${MAF} -c ${MAC} -i ${INFO} -w ${HWE}" >> ${RAWDATACOHORT}/gwas.cleaner.${BASESPLITFILE}.sh
+			echobold "#========================================================================================================"
+			echobold "#== CLEANING UP THE REFORMATTED GWAS DATA"
+			echobold "#========================================================================================================"
+			echobold "#"
+			echo ""
+			echo "* Cleaning harmonized data for [ ${BASESPLITFILE} ] file for cohort ${COHORT} with ${REFERENCE}"
+			echo "  using the following pre-specified settings:"
+			echo "  - MAF  = ${MAF}"
+			echo "  - MAC  = ${MAC}"
+			echo "  - HWE  = ${HWE}"
+			echo "  - INFO = ${INFO}"
+			echo "  - BETA = ${BETA}"
+			echo "  - SE   = ${SE}"
+			### FOR DEBUGGING LOCALLY -- Mac OS X
+			### ${SCRIPTS}/gwas.cleaner.R -d ${SPLITFILE}.pdat -f ${BASESPLITFILE} -o ${RAWDATACOHORT} -e ${BETA} -s ${SE} -m ${MAF} -c ${MAC} -i ${INFO} -w ${HWE}
+			echo "${SCRIPTS}/gwas.cleaner.R -d ${SPLITFILE}.pdat -f ${BASESPLITFILE} -o ${RAWDATACOHORT} -e ${BETA} -s ${SE} -m ${MAF} -c ${MAC} -i ${INFO} -w ${HWE}" >> ${RAWDATACOHORT}/gwas.cleaner.${BASESPLITFILE}.sh
 # 			qsub -S /bin/bash -N gwas.cleaner.${BASEFILE} -hold_jid gwas2ref.harmonizer.${BASEFILE} -o ${RAWDATACOHORT}/gwas.cleaner.${BASESPLITFILE}.log -e ${RAWDATACOHORT}/gwas.cleaner.${BASESPLITFILE}.errors -l h_rt=${QRUNTIMECLEANER} -l h_vmem=${QMEMCLEANER} -M ${QMAIL} -m ${QMAILOPTIONS} -cwd ${RAWDATACOHORT}/gwas.cleaner.${BASESPLITFILE}.sh
 
 		done
