@@ -263,7 +263,7 @@ else
 		## Adding headers -- this is ABSOLUTELY required for the 'gwas.parser.R'.
 		for SPLITFILE in ${RAWDATACOHORT}/${BASEFILE}.*; do
 			### determine basename of the splitfile
-			BASESPLITFILE=$(basename ${SPLITFILE} )
+			BASESPLITFILE=$(basename ${SPLITFILE} .pdat)
 			echo ""
 			echo "* Prepping split chunk: [ ${BASESPLITFILE} ]..."
 			echo ""
@@ -301,7 +301,7 @@ else
 			### FOR DEBUGGING LOCALLY -- Mac OS X
 			### ${SCRIPTS}/gwas.cleaner.R -d ${SPLITFILE}.pdat -f ${BASESPLITFILE} -o ${RAWDATACOHORT} -e ${BETA} -s ${SE} -m ${MAF} -c ${MAC} -i ${INFO} -w ${HWE}
 			echo "${SCRIPTS}/gwas.cleaner.R -d ${SPLITFILE}.pdat -f ${BASESPLITFILE} -o ${RAWDATACOHORT} -e ${BETA} -s ${SE} -m ${MAF} -c ${MAC} -i ${INFO} -w ${HWE}" >> ${RAWDATACOHORT}/gwas.cleaner.${BASESPLITFILE}.sh
-# 			qsub -S /bin/bash -N gwas.cleaner.${BASEFILE} -hold_jid gwas2ref.harmonizer.${BASEFILE} -o ${RAWDATACOHORT}/gwas.cleaner.${BASESPLITFILE}.log -e ${RAWDATACOHORT}/gwas.cleaner.${BASESPLITFILE}.errors -l h_rt=${QRUNTIMECLEANER} -l h_vmem=${QMEMCLEANER} -M ${QMAIL} -m ${QMAILOPTIONS} -cwd ${RAWDATACOHORT}/gwas.cleaner.${BASESPLITFILE}.sh
+			qsub -S /bin/bash -N gwas.cleaner.${BASEFILE} -hold_jid gwas2ref.harmonizer.${BASEFILE} -o ${RAWDATACOHORT}/gwas.cleaner.${BASESPLITFILE}.log -e ${RAWDATACOHORT}/gwas.cleaner.${BASESPLITFILE}.errors -l h_rt=${QRUNTIMECLEANER} -l h_vmem=${QMEMCLEANER} -M ${QMAIL} -m ${QMAILOPTIONS} -cwd ${RAWDATACOHORT}/gwas.cleaner.${BASESPLITFILE}.sh
 
 		done
 

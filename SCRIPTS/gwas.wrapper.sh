@@ -69,13 +69,13 @@ script_arguments_error() {
 }
 
 echobold "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echobold "          GWASWRAPPER: WRAPPER FOR PARSED, HARMONIZED CLEANED GENOME-WIDE ASSOCIATION STUDIES"
+echobold "          GWASWRAPPER: WRAPPER FOR PARSED AND CLEANED GENOME-WIDE ASSOCIATION STUDIES"
 echobold ""
-echobold "* Version:      v1.1.0"
+echobold "* Version:      v1.0.0"
 echobold ""
-echobold "* Last update:  2018-03-08"
+echobold "* Last update:  2018-03-21"
 echobold "* Written by:   Sander W. van der Laan | s.w.vanderlaan@gmail.com."
-echobold "* Description:  Produce concatenated parsed, harmonized, and cleaned GWAS data."
+echobold "* Description:  Produce concatenated parsed, and cleaned GWAS data."
 echobold ""
 echobold "* REQUIRED: "
 echobold "  - A high-performance computer cluster with a qsub system"
@@ -122,13 +122,8 @@ else
 	echo ""
 	echo "* Making necessary 'readme' files..."
 	echo "Cohort File VariantType Parsing ParsingErrorFile" > ${PROJECTDIR}/${COHORTNAME}.wrap.parsed.readme
-	echo "Cohort File VariantType Harmonizing HarmonizingErrorFile" > ${PROJECTDIR}/${COHORTNAME}.wrap.harmonized.readme
 	echo "Cohort File VariantType Cleaning CleaningErrorFile" > ${PROJECTDIR}/${COHORTNAME}.wrap.cleaned.readme
 	
-	### HEADER .ref.pdat
-	### VariantID	Marker	MarkerOriginal	CHR	BP	Strand	EffectAllele	OtherAllele	MinorAllele	MajorAllele	EAF	MAF	MAC	HWE_P	Info	Beta	BetaMinor	SE	P	N	N_cases	N_controls	Imputed	Reference	VT
-	### 1		    2       3               4   5   6       7               8           9           10          11  12  13  14      15	    16	    17          18  19  20  21      22          23      24			25
-
 	### HEADER .pdat-file
 	### Marker	MarkerOriginal	CHR	BP	Strand	EffectAllele	OtherAllele	MinorAllele	MajorAllele	EAF	MAF	MAC	HWE_P	Info	Beta	BetaMinor	SE	P	N	N_cases	N_controls	Imputed
 	### 1	    2               3   4   5       6               7           8           9           10  11  12  13      14      15      16          17  18  19  20      21          22
@@ -140,19 +135,16 @@ else
 	echo ""	
 	echo "* Making necessary 'summarized' files..."
 	echo "Marker	MarkerOriginal	CHR	BP	Strand	EffectAllele	OtherAllele	MinorAllele	MajorAllele	EAF	MAF	MAC	HWE_P	Info	Beta	BetaMinor	SE	P	N	N_cases	N_controls	Imputed" > ${PROJECTDIR}/${COHORTNAME}.pdat
-	echo "VariantID	Marker	MarkerOriginal	CHR	BP	Strand	EffectAllele	OtherAllele	MinorAllele	MajorAllele	EAF	MAF	MAC	HWE_P	Info	Beta	BetaMinor	SE	P	N	N_cases	N_controls	Imputed	Reference" > ${PROJECTDIR}/${COHORTNAME}.rdat
 	echo "VariantID	Marker	MarkerOriginal	CHR	BP	Strand	EffectAllele	OtherAllele	MinorAllele	MajorAllele	EAF	MAF	MAC	HWE_P	Info	Beta	BetaMinor	SE	P	N	N_cases	N_controls	Imputed	Reference VT" > ${PROJECTDIR}/${COHORTNAME}.cdat
 	
 		
 	### Setting the patterns to look for -- never change this
 	PARSEDPATTERN="All done parsing"
-	HARMONIZEDPATTERN="All done harmonizing. Let's have a beer, buddy!"
 	CLEANEDPATTERN="All done cleaning"
 	
 	echo ""
 	echo "We will look for the following pattern in the ..."
 	echo "...parsed log file...........: [ ${PARSEDPATTERN} ]"
-	echo "...harmonized log file.......: [ ${HARMONIZEDPATTERN} ]"
 	echo "...cleaned log file..........: [ ${CLEANEDPATTERN} ]"
 	
 	echo ""
@@ -198,46 +190,7 @@ else
 	done
 	
 	echo ""
-	echo "* Check harmonization of GWAS datasets."
-	for ERRORFILE in ${PROJECTDIR}/gwas2ref.harmonizer.${BASEFILENAME}.*.log; do
-		### determine basename of the ERRORFILE
-		BASENAMEERRORFILE=$(basename ${ERRORFILE})
-		BASEERRORFILE=$(basename ${ERRORFILE} .log)
-		prefix_harmonized='gwas2ref.harmonizer.' # removing the 'gwas2ref.harmonizer.'-part from the ERRORFILE
-		BASEHARMONIZEDFILE=$(echo "${BASEERRORFILE}" | sed -e "s/^$prefix_harmonized//")
-		echo ""
-		echo "* checking split chunk: [ ${BASEHARMONIZEDFILE} ] for pattern \"${HARMONIZEDPATTERN}\"..."
-	
-		echo "Error file...........................:" ${BASENAMEERRORFILE}
-		if [[ ! -z $(grep "${HARMONIZEDPATTERN}" "${ERRORFILE}") ]]; then 
-			HARMONIZEDMESSAGE=$(echosucces "successfully harmonized")
-			HARMONIZEDMESSAGEREADME=$(echo "success")
-			echo "Harmonizing report...................: ${HARMONIZEDMESSAGE}"
-			echo "- concatenating data to [ ${PROJECTDIR}/${COHORTNAME}.rdat ]..."
-			echo "${COHORTNAME} ${BASEFILENAME}.txt.gz ${VARIANTYPE} ${HARMONIZEDMESSAGEREADME} ${BASENAMEERRORFILE}" >> ${PROJECTDIR}/${COHORTNAME}.wrap.harmonized.readme
-			cat ${PROJECTDIR}/${BASEHARMONIZEDFILE}.ref.pdat | tail -n +2  | awk -F '\t' '{ print $0 }' >> ${PROJECTDIR}/${COHORTNAME}.rdat
-			echo "- removing files [ ${PROJECTDIR}/${BASEHARMONIZEDFILE}[.ref.pdat/.errors/.log] ]..."
-			rm -v ${PROJECTDIR}/${BASEHARMONIZEDFILE}.ref.pdat
-			rm -v ${PROJECTDIR}/${prefix_harmonized}${BASEHARMONIZEDFILE}.errors
-			rm -v ${PROJECTDIR}/${prefix_harmonized}${BASEHARMONIZEDFILE}.log
-			rm -v ${PROJECTDIR}/${prefix_harmonized}${BASEHARMONIZEDFILE}.sh
-		else
-			echoerrorflash "*** Error *** The pattern \"${HARMONIZEDPATTERN}\" was NOT found in [ ${BASENAMEERRORFILE} ]..."
-			echoerror "Reported in the [ ${BASENAMEERRORFILE} ]:      "
-			echoerror "####################################################################################"
-			cat ${ERRORFILE}
-			echoerror "####################################################################################"
-			HARMONIZEDMESSAGE=$(echosucces "harmonization failure")
-			HARMONIZEDMESSAGEREADME=$(echo "failure")
-			echo "Harmonizing report...................: ${HARMONIZEDMESSAGE}"
-			echo "${COHORTNAME} ${BASEFILENAME}.txt.gz ${VARIANTYPE} ${HARMONIZEDMESSAGEREADME} ${BASENAMEERRORFILE}" >> ${PROJECTDIR}/${COHORTNAME}.wrap.harmonized.readme
-		fi
-		
-		echo ""
-	done
-	
-	echo ""
-	echo "* Check cleaning of harmonized GWAS datasets."
+	echo "* Check cleaning of parsed GWAS datasets."
 	for ERRORFILE in ${PROJECTDIR}/gwas.cleaner.${BASEFILENAME}.*.log; do
 		### determine basename of the ERRORFILE
 		BASENAMEERRORFILE=$(basename ${ERRORFILE})
@@ -280,10 +233,6 @@ else
 	echo ""
 	echo "Gzipping da [ ${COHORTNAME}.pdat ] shizzle..."
 	gzip -v ${PROJECTDIR}/${COHORTNAME}.pdat
-
-	echo ""
-	echo "Gzipping da [ ${COHORTNAME}.rdat ] shizzle..."
-	gzip -v ${PROJECTDIR}/${COHORTNAME}.rdat
 	
 	echo ""
 	echo "Gzipping da [ ${COHORTNAME}.cdat ] shizzle..."
