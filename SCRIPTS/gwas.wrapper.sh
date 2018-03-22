@@ -160,7 +160,7 @@ else
 			PARSEDMESSAGEREADME=$(echo "success")
 			echo "Parsing report.......................: ${PARSEDMESSAGE}"
 			echo "${COHORTNAME} ${BASEFILENAME}.txt.gz ${PARSEDMESSAGEREADME} ${BASENAMEERRORFILE}" >> ${PROJECTDIR}/${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.wrap.parsed.readme
-			echo "- concatenating data to [ ${PROJECTDIR}/${COHORTNAME}.pdat ]..."
+			echo "- concatenating data to [ ${PROJECTDIR}/${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.pdat ]..."
 			cat ${PROJECTDIR}/${BASEPARSEDFILE}.pdat | tail -n +2 | awk -F '\t' '{ print $0 }' >> ${PROJECTDIR}/${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.pdat
 			echo "- removing files [ ${PROJECTDIR}/${BASEPARSEDFILE}[.pdat/.errors/.log] ]..."
 			rm -v ${PROJECTDIR}/${BASEPARSEDFILE}.pdat
@@ -223,7 +223,7 @@ else
 				CLEANEDMESSAGE=$(echosucces "successfully cleaned")
 				CLEANEDMESSAGEREADME=$(echo "success")
 				echo "Cleaning report......................: ${CLEANEDMESSAGE}"
-				echo "- concatenating data to [ ${PROJECTDIR}/${COHORTNAME}.rdat ]..."
+				echo "- concatenating data to [ ${PROJECTDIR}/${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.cdat ]..."
 				echo "${COHORTNAME} ${BASEFILENAME}.txt.gz ${CLEANEDMESSAGEREADME} ${BASENAMEERRORFILE}" >> ${PROJECTDIR}/${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.wrap.cleaned.readme
 				cat ${PROJECTDIR}/${BASECLEANEDFILE}.cdat | tail -n +2  | awk -F '\t' '{ print $0 }' >> ${PROJECTDIR}/${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.cdat
 				echo "- removing files [ ${PROJECTDIR}/${BASECLEANEDFILE}[.cdat/.errors/.log] ]..."
@@ -250,15 +250,15 @@ else
 	fi
 			
 	echo ""
-	echo "Gzipping da [ ${COHORTNAME}.pdat ] shizzle..."
+	echo "Gzipping da [ ${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.pdat ] shizzle..."
 	gzip -v ${PROJECTDIR}/${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.pdat
-	mv -v ${PROJECTDIR}/${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.pdat.gz ${PROJECTDIR}/${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.FINAL.txt.gz
+	cp -fv ${PROJECTDIR}/${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.pdat.gz ${PROJECTDIR}/${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.FINAL.txt.gz
 
 	if [[ ${GWASQC} = "YES" ]]; then	
 		echo ""
-		echo "Gzipping da [ ${COHORTNAME}.cdat ] shizzle..."
+		echo "Gzipping da [ ${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.cdat ] shizzle..."
 		gzip -v ${PROJECTDIR}/${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.cdat
-		mv -v ${PROJECTDIR}/${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.cdat.gz ${PROJECTDIR}/${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.FINAL.txt.gz
+		cp -fv ${PROJECTDIR}/${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.cdat.gz ${PROJECTDIR}/${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.FINAL.txt.gz
 	fi
 	
 ### END of if-else statement for the number of command-line arguments passed ###

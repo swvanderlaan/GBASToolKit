@@ -133,8 +133,14 @@ echobold "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	### 585	ENST00000335137.3	chr1	+	69090	70008	69090	70008	1	69090,	70008,	0	OR4F5	cmpl	cmpl	0,
 	
 	echo "* parsing [ GENCODE ] ... "
-	zcat ${RESOURCES}/GENCODE_wgEncodeBasicV19_GRCh37_hg19_Feb2009.txt.gz | awk '{ print $3, $5, $6, $13 }' | awk -F" " '{gsub(/chr/, "", $1)}1' | tail -n +2 > ${RESOURCES}/gencode_v19_GRCh37_hg19_Feb2009.txt 
-	rm -fv ${RESOURCES}/GENCODE_wgEncodeBasicV19_GRCh37_hg19_Feb2009.txt.gz
+	zcat ${RESOURCES}/GENCODE_wgEncodeBasicV19_GRCh37_hg19_Feb2009.txt.gz | awk '{ print $3, $5, $6, $13 }' | awk -F" " '{gsub(/chr/, "", $1)}1' | awk -F" " '{gsub(/X/, "23", $1)}1' | awk -F" " '{gsub(/Y/, "24", $1)}1' | awk -F" " '{gsub(/M/, "26", $1)}1' > ${RESOURCES}/gencode_v19_GRCh37_hg19_Feb2009.txt 
+	mv -v ${RESOURCES}/gencode_v19_GRCh37_hg19_Feb2009.txt foo
+	touch ${RESOURCES}/gencode_v19_GRCh37_hg19_Feb2009.txt
+	for CHR in $(seq 1 24); do
+		cat foo | awk ' $1 == '$CHR' ' >> ${RESOURCES}/gencode_v19_GRCh37_hg19_Feb2009.txt
+	done
+	
+	rm -fv ${RESOURCES}/GENCODE_wgEncodeBasicV19_GRCh37_hg19_Feb2009.txt.gz foo
 	
 	echo "* downloading [ refseq ] ... "
 	wget http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/refGene.txt.gz -O ${RESOURCES}/refGene_GRCh37_hg19_Feb2009.txt.gz
@@ -143,13 +149,18 @@ echobold "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	### 585	NR_024540	chr1	-	14361	29370	29370	29370	11	14361,14969,15795,16606,16857,17232,17605,17914,18267,24737,29320,	14829,15038,15947,16765,17055,17368,17742,18061,18366,24891,29370,	0	WASH7P	unk	unk	-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
 
 	echo "* parsing [ refseq ] ... "
-	zcat ${RESOURCES}/refGene_GRCh37_hg19_Feb2009.txt.gz | awk '{ print $3, $5, $6, $13 }' | awk -F" " '{gsub(/chr/, "", $1)}1' > ${RESOURCES}/refseq_GRCh37_hg19_Feb2009.txt
-	rm -fv ${RESOURCES}/refGene_GRCh37_hg19_Feb2009.txt.gz
+	zcat ${RESOURCES}/refGene_GRCh37_hg19_Feb2009.txt.gz | awk '{ print $3, $5, $6, $13 }' | awk -F" " '{gsub(/chr/, "", $1)}1' | awk -F" " '{gsub(/X/, "23", $1)}1' | awk -F" " '{gsub(/Y/, "24", $1)}1' > ${RESOURCES}/refseq_GRCh37_hg19_Feb2009.txt
+	mv -v ${RESOURCES}/refseq_GRCh37_hg19_Feb2009.txt foo
+	touch ${RESOURCES}/refseq_GRCh37_hg19_Feb2009.txt
+	for CHR in $(seq 1 24); do
+		cat foo | awk ' $1 == '$CHR' ' >> ${RESOURCES}/refseq_GRCh37_hg19_Feb2009.txt
+	done
+	
+	rm -fv ${RESOURCES}/refGene_GRCh37_hg19_Feb2009.txt.gz foo 
 
 	echo ""	
 	echo "All done submitting jobs for downloading and parsing gene lists! 🖖"
 	echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-
 
 script_copyright_message
 

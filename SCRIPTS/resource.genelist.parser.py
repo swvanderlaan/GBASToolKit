@@ -8,11 +8,11 @@
 ### - dynamically determine the proper chr-bp based on the reference, like with the VariantID/Marker
 
 print "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-print "                                         MetaGWASToolKit: GeneList Parser"
+print "                                         GBASToolKit: GeneList Parser"
 print ""
 print "* Version          : v1.0.0"
 print ""
-print "* Last update      : 2017-05-05"
+print "* Last update      : 2018-03-22"
 print "* Written by       : Tim Bezemer | bezemer.tim@gmail.com."
 print "* Suggested for by : Sander W. van der Laan | s.w.vanderlaan@gmail.com"
 print ""

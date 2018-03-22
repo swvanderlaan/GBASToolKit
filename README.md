@@ -30,18 +30,19 @@ We need to make an appropriate directory to download 'gits' to, and install this
 mkdir -p ~/git/ && cd ~/git
 ```
 
-#### Step 2: Clone this git, unless it already exists.
+#### Step 2: Clone this git, unless it already exists. 
+We clone using SSH, which makes editing, committing, pushing and pulling of the repository much easier.
 
 ```
 if [ -d ~/git/GBASToolKit/.git ]; then \
 		cd ~/git/GBASToolKit && git pull; \
 	else \
-		cd ~/git/ && git clone https://github.com/swvanderlaan/GBASToolKit.git; \
+		cd ~/git/ && git clone git@github.com:swvanderlaan/GBASToolKit.git; \
 	fi
 ```
 
 #### Step 3: Check for dependencies of Python, Perl and R, and install them if necessary.
-[text and codes forthcoming]
+:large_orange_diamond: [text and codes forthcoming]
 
 
 #### Step 4: Create necessary databases. These include:
@@ -60,7 +61,7 @@ There are a couple of reference available per standard, these are:
 - **1000G phase 1, version 3 [`1Gp1`], b37.**              -- 1Gp1 contains about 38 million variants, including INDELs, and variation on the X, XY, and Y-chromosomes. VEGAS2 only.
 - **1000G phase 3, version 5 [`1Gp3`], b37.**              -- 1Gp3 contains about 88 million variants, including INDELs, and variation on the X, XY, and Y-chromosomes. VEGAS2 and MAGMA. [NOT AVAILABLE YET for VEGAS2] :large_orange_diamond:
 
-#### Step 5: Installation of necessary software
+#### Step 5: Installation of necessary software :large_blue_diamond:
 **GBASToolKit** requires you to install several software packages. 
 - *PLINK2* for LD-calculations; reference: https://www.cog-genomics.org/plink2. 
 - *VEGAS2*; for gene-based association analysis; reference: https://vegas2.qimrberghofer.edu.au. 
@@ -88,6 +89,9 @@ The user can choose to clean the parsed and reformatted the data; this will be b
 
 In such cases the resulting file, `dataset.cdat`, will be used for downstream analyses, instead of the `dataset.pdat` file.
 
+#### Gene-based analysis
+A genome-wide, per-chromosome VEGAS2 and MAGMA analysis is performed. In addition a standard pathway-enrichment analysis in MAGMA is also done. Results are summarised into easy tables.
+:large_orange_diamond: [Future versions will also plot results.]
 
 --------------
 
@@ -104,7 +108,7 @@ In such cases the resulting file, `dataset.cdat`, will be used for downstream an
 - add in HapMap2 as reference (VEGAS2 only) :large_blue_diamond:
 - add in download and parsing script for reference to enable per-chromosome analyses :large_blue_diamond:
 - add in VEGAS2 based pathway enrichment analysis :construction:
-- ~~add in a relevant annotation function~~ :ballot_box_with_check:
+- extent resource script with download of functional elements, to facilitate the analysis of transcription binding sites, or active enhancers, _etc._ :large_orange_diamond:
 
 #### Plotting
 - add (option) to plot results in a Manhattan :large_orange_diamond:
