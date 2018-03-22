@@ -82,9 +82,9 @@ echobold "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 echobold "                          GASToolKit: A TOOLKIT FOR GENE-BASED ASSOCIATION STUDIES"
 echoitalic "                    --- prepare and perform gene-based studies using VEGAS2 or MAGMA---"
 echobold ""
-echobold "* Version:      v1.0.0"
+echobold "* Version:      v1.0.1"
 echobold ""
-echobold "* Last update:  2018-03-21"
+echobold "* Last update:  2018-03-22"
 echobold "* Written by:   Sander W. van der Laan | s.w.vanderlaan@gmail.com."
 echobold "* Description:  Prepare and perform gene-based association studies. It will do the following:"
 echobold "                - Automatically parse the summary statistics of some (meta-analysis of) GWAS."
@@ -275,7 +275,7 @@ else
 			mv -fv ${RAWDATACOHORT}/tmp_file ${SPLITFILE}
 			
 			echobold "#========================================================================================================"
-			echobold "#== PARSING THE GWAS DATA"
+			echobold "#== PARSING AND REFORMATTING THE GWAS DATA"
 			echobold "#========================================================================================================"
 			echobold "#"
 			echo ""
@@ -285,23 +285,47 @@ else
 			echo "Rscript ${SCRIPTS}/gwas.parser.R -p ${PROJECTDIR} -d ${SPLITFILE} -o ${OUTPUTDIRNAME}/${SUBPROJECTDIRNAME}/PARSED/${COHORT} " > ${RAWDATACOHORT}/gwas.parser.${BASESPLITFILE}.sh
 			qsub -S /bin/bash -N gwas.parser.${BASESPLITFILE} -hold_jid run_metagwastoolkit -o ${RAWDATACOHORT}/gwas.parser.${BASESPLITFILE}.log -e ${RAWDATACOHORT}/gwas.parser.${BASESPLITFILE}.errors -l h_rt=${QRUNTIMEPARSER} -l h_vmem=${QMEMPARSER} -M ${QMAIL} -m ${QMAILOPTIONS} -cwd ${RAWDATACOHORT}/gwas.parser.${BASESPLITFILE}.sh
 			
-			echobold "#========================================================================================================"
-			echobold "#== CLEANING UP THE REFORMATTED GWAS DATA"
-			echobold "#========================================================================================================"
-			echobold "#"
-			echo ""
-			echo "* Cleaning harmonized data for [ ${BASESPLITFILE} ] file for cohort ${COHORT} with ${REFERENCE}"
-			echo "  using the following pre-specified settings:"
-			echo "  - MAF  = ${MAF}"
-			echo "  - MAC  = ${MAC}"
-			echo "  - HWE  = ${HWE}"
-			echo "  - INFO = ${INFO}"
-			echo "  - BETA = ${BETA}"
-			echo "  - SE   = ${SE}"
-			### FOR DEBUGGING LOCALLY -- Mac OS X
-			### ${SCRIPTS}/gwas.cleaner.R -d ${SPLITFILE}.pdat -f ${BASESPLITFILE} -o ${RAWDATACOHORT} -e ${BETA} -s ${SE} -m ${MAF} -c ${MAC} -i ${INFO} -w ${HWE}
-			echo "${SCRIPTS}/gwas.cleaner.R -d ${SPLITFILE}.pdat -f ${BASESPLITFILE} -o ${RAWDATACOHORT} -e ${BETA} -s ${SE} -m ${MAF} -c ${MAC} -i ${INFO} -w ${HWE}" >> ${RAWDATACOHORT}/gwas.cleaner.${BASESPLITFILE}.sh
-			qsub -S /bin/bash -N gwas.cleaner.${BASEFILE} -hold_jid gwas2ref.harmonizer.${BASEFILE} -o ${RAWDATACOHORT}/gwas.cleaner.${BASESPLITFILE}.log -e ${RAWDATACOHORT}/gwas.cleaner.${BASESPLITFILE}.errors -l h_rt=${QRUNTIMECLEANER} -l h_vmem=${QMEMCLEANER} -M ${QMAIL} -m ${QMAILOPTIONS} -cwd ${RAWDATACOHORT}/gwas.cleaner.${BASESPLITFILE}.sh
+			if [[ ${GWASQC} = "YES" ]]; then
+			 
+				echobold "#========================================================================================================"
+				echobold "#== CLEANING UP THE REFORMATTED GWAS DATA"
+				echobold "#========================================================================================================"
+				echobold "#"
+				echo ""
+				echo "* Cleaning harmonized data for [ ${BASESPLITFILE} ] file for cohort ${COHORT} with ${REFERENCE}"
+				echo "  using the following pre-specified settings:"
+				echo "  - MAF  = ${MAF}"
+				echo "  - MAC  = ${MAC}"
+				echo "  - HWE  = ${HWE}"
+				echo "  - INFO = ${INFO}"
+				echo "  - BETA = ${BETA}"
+				echo "  - SE   = ${SE}"
+				### FOR DEBUGGING LOCALLY -- Mac OS X
+				### ${SCRIPTS}/gwas.cleaner.R -d ${SPLITFILE}.pdat -f ${BASESPLITFILE} -o ${RAWDATACOHORT} -e ${BETA} -s ${SE} -m ${MAF} -c ${MAC} -i ${INFO} -w ${HWE}
+				echo "${SCRIPTS}/gwas.cleaner.R -d ${SPLITFILE}.pdat -f ${BASESPLITFILE} -o ${RAWDATACOHORT} -e ${BETA} -s ${SE} -m ${MAF} -c ${MAC} -i ${INFO} -w ${HWE}" >> ${RAWDATACOHORT}/gwas.cleaner.${BASESPLITFILE}.sh
+				qsub -S /bin/bash -N gwas.cleaner.${BASEFILE} -hold_jid gwas2ref.harmonizer.${BASEFILE} -o ${RAWDATACOHORT}/gwas.cleaner.${BASESPLITFILE}.log -e ${RAWDATACOHORT}/gwas.cleaner.${BASESPLITFILE}.errors -l h_rt=${QRUNTIMECLEANER} -l h_vmem=${QMEMCLEANER} -M ${QMAIL} -m ${QMAILOPTIONS} -cwd ${RAWDATACOHORT}/gwas.cleaner.${BASESPLITFILE}.sh
+			
+			elif [[ ${GWASQC} = "NO" ]]; then
+			
+				echobold "#========================================================================================================"
+				echobold "#== THE REFORMATTED GWAS DATA IS NOT CLEANED"
+				echobold "#========================================================================================================"
+				echobold "#"
+		
+			else
+			  	echoerror "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+			  	echoerror ""
+			  	echoerrorflash "                  *** Oh, computer says no! Argument not recognised. ***"
+			  	echoerror "You should choose whether you want to apply quality control on the parsed and reformatted GWAS data, you"
+			  	echoerror "have the following options (please also refer to the configuration-file and the GBASToolKit Manual):"
+			  	echoerror " - [YES]  apply quality control."
+			  	echoerror " - [No]   do not apply quality control."
+			  	echoerror "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+				### The wrong arguments are passed, so we'll exit the script now!
+				echo ""
+				script_copyright_message
+				exit 1
+			fi
 
 		done
 
@@ -313,75 +337,75 @@ else
 		echo ""
 		echo "* Wrapping up parsed and harmonized data for cohort ${COHORT}..."
 		### FOR DEBUGGING LOCALLY -- Mac OS X
-		### ${SCRIPTS}/gwas.wrapper.sh ${RAWDATACOHORT} ${COHORT} ${BASEFILE} ${VARIANTYPE}
-		echo "${SCRIPTS}/gwas.wrapper.sh ${RAWDATACOHORT} ${COHORT} ${BASEFILE} ${VARIANTYPE}" >> ${RAWDATACOHORT}/gwas.wrapper.${BASEFILE}.sh
+		### ${SCRIPTS}/gwas.wrapper.sh ${CONFIGURATIONFILE} ${RAWDATACOHORT} ${COHORT} ${BASEFILE}
+		echo "${SCRIPTS}/gwas.wrapper.sh ${CONFIGURATIONFILE} ${RAWDATACOHORT} ${COHORT} ${BASEFILE}" >> ${RAWDATACOHORT}/gwas.wrapper.${BASEFILE}.sh
 # 		qsub -S /bin/bash -N gwas.wrapper -hold_jid gwas.cleaner.${BASEFILE} -o ${RAWDATACOHORT}/gwas.wrapper.${BASEFILE}.log -e ${RAWDATACOHORT}/gwas.wrapper.${BASEFILE}.errors -l h_rt=${QRUNTIMEWRAPPER} -l h_vmem=${QMEMWRAPPER} -M ${QMAIL} -m ${QMAILOPTIONS} -cwd ${RAWDATACOHORT}/gwas.wrapper.${BASEFILE}.sh
 		
 	done < ${GWASFILES}
 
-# 
-# 	echobold "#========================================================================================================"
-# 	echobold "#== GENE-BASED ANALYSIS OF META-ANALYSIS RESULTS USING VEGAS2"
-# 	echobold "#========================================================================================================"
-# 	echobold "#"
-# 	# REQUIRED: VEGAS/VEGAS2 settings.
-# 	# Note: we do `cd ${VEGASDIR}` because VEGAS is making temp-files in a special way, 
-# 	#       adding a date-based number in front of the input/output files.
-# 	echo "Creating VEGAS input files..." 
-# 	mkdir -v ${SUBPROJECTDIR}/vegas
-# 	VEGASDIR=${SUBPROJECTDIR}/vegas
-# 	chmod -Rv a+rwx ${VEGASDIR}
-# 	echo "...per chromosome."
-# 	
-# 	while IFS='' read -r GWASCOHORT || [[ -n "$GWASCOHORT" ]]; do
-# 			LINE=${GWASCOHORT}
-# 			COHORT=$(echo "${LINE}" | awk '{ print $1 }')
-# 			echo "     * ${COHORT}"
-# 		for CHR in $(seq 1 23); do
-# 			if [[ $CHR -le 22 ]]; then 
-# 				echo "Processing chromosome ${CHR}..."
-# 				echo "zcat ${METARESULTDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.summary.txt.gz | ${SCRIPTS}/parseTable.pl --col VARIANTID,CHR,P_FIXED | awk ' \$2==${CHR} ' | awk '{ print \$1, \$3 }' | tail -n +2 > ${VEGASDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.forVEGAS.txt " > ${VEGASDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.sh
-# 				echo "cd ${VEGASDIR} " >> ${VEGASDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.sh
-# 				echo "$VEGAS2 -G -snpandp meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.forVEGAS.txt -custom ${VEGAS2POP}.chr${CHR} -glist ${VEGAS2GENELIST} -upper ${VEGAS2UPPER} -lower ${VEGAS2LOWER} -chr ${CHR} -out meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.fromVEGAS " >> ${VEGASDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.sh
-# 				qsub -S /bin/bash -N VEGAS2.${PROJECTNAME}.chr${CHR} -hold_jid METASUM -o ${VEGASDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.log -e ${VEGASDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.errors -l h_vmem=${QMEMVEGAS} -l h_rt=${QRUNTIMEVEGAS} -wd ${VEGASDIR} ${VEGASDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.sh
-# 		
-# 			elif [[ $CHR -eq 23 ]]; then  
-# 				echo "Processing chromosome X..."
-# 				echo "zcat ${METARESULTDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.summary.txt.gz | ${SCRIPTS}/parseTable.pl --col VARIANTID,CHR,P_FIXED | awk ' \$2==\"X\" ' | awk '{ print \$1, \$3 }' | tail -n +2 > ${VEGASDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.forVEGAS.txt " > ${VEGASDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.sh
-# 				echo "cd ${VEGASDIR} " >> ${VEGASDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.sh
-# 				echo "$VEGAS2 -G -snpandp meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.forVEGAS.txt -custom ${VEGAS2POP}.chr${CHR} -glist ${VEGAS2GENELIST} -upper ${VEGAS2UPPER} -lower ${VEGAS2LOWER} -chr ${CHR} -out meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.fromVEGAS " >> ${VEGASDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.sh
-# 				qsub -S /bin/bash -N VEGAS2.${PROJECTNAME}.chr${CHR} -hold_jid METASUM -o ${VEGASDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.log -e ${VEGASDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.errors -l h_vmem=${QMEMVEGAS} -l h_rt=${QRUNTIMEVEGAS} -wd ${VEGASDIR} ${VEGASDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.sh
-# 		
-# 			else
-# 				echo "*** ERROR *** Something is rotten in the City of Gotham; most likely a typo. Double back, please."	
-# 				exit 1
-# 			fi
-# 
-# 		done
-# 	done < ${GWASFILES}
-# 
-# 	echobold "#========================================================================================================"
-# 	echobold "#== GENE-BASED ANALYSIS OF META-ANALYSIS RESULTS USING MAGMA"
-# 	echobold "#========================================================================================================"
-# 	echobold "#"
-# 	### REQUIRED: MAGMA settings.
-# 	### Head for MAGMA input
-# 	### SNP CHR BP P NOBS 
-# 	echo "Creating MAGMA input files..." 
-# 	mkdir -v ${METARESULTDIR}/magma
-# 	MAGMARESULTDIR=${METARESULTDIR}/magma
-# 	chmod -Rv a+rwx ${MAGMARESULTDIR}
-# 	echo " - whole-genome..."
-#  	echo "echo \"SNP CHR BP P NOBS\" > ${MAGMARESULTDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.forMAGMA.txt " > ${MAGMARESULTDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.runMAGMA.sh
-#  	echo "zcat ${METARESULTDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.summary.txt.gz | ${SCRIPTS}/parseTable.pl --col VARIANTID,CHR,POS,P_FIXED,N_EFF | tail -n +2 | awk '{ print \$1, \$2, \$3, \$4, int(\$5) }' >> ${MAGMARESULTDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.forMAGMA.txt " >> ${MAGMARESULTDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.runMAGMA.sh
-# 	echo "${MAGMA} --annotate --snp-loc ${MAGMARESULTDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.forMAGMA.txt --gene-loc ${MAGMAGENES} --out ${MAGMARESULTDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.fromMAGMA.annotated " >> ${MAGMARESULTDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.runMAGMA.sh
-# 	qsub -S /bin/bash -N MAGMA.ANALYSIS.${PROJECTNAME} -hold_jid METASUM -o ${MAGMARESULTDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.runMAGMA.log -e ${MAGMARESULTDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.runMAGMA.errors -l h_vmem=${QMEMMAGMA} -l h_rt=${QRUNTIMEMAGMA} -wd ${MAGMARESULTDIR} ${MAGMARESULTDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.runMAGMA.sh
-# 
-# 	echo "${MAGMA} --bfile ${MAGMAPOP} synonyms=${MAGMADBSNP} synonym-dup=drop-dup --pval ${MAGMARESULTDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.forMAGMA.txt ncol=NOBS --gene-annot ${MAGMARESULTDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.fromMAGMA.annotated.genes.annot --out ${MAGMARESULTDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.fromMAGMA.genesannotated " > ${MAGMARESULTDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.annotMAGMA.sh
-#  	qsub -S /bin/bash -N MAGMA.ANNOTATION.${PROJECTNAME} -hold_jid MAGMA.ANALYSIS.${PROJECTNAME} -o ${MAGMARESULTDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.annotMAGMA.log -e ${MAGMARESULTDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.annotMAGMA.errors -l h_vmem=${QMEMMAGMA} -l h_rt=${QRUNTIMEMAGMA} -wd ${MAGMARESULTDIR} ${MAGMARESULTDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.annotMAGMA.sh
-# 
-#  	echo "${MAGMA} --gene-results ${MAGMARESULTDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.fromMAGMA.genesannotated.genes.raw --set-annot ${MAGMAGENESETS} --out ${MAGMARESULTDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.fromMAGMA.gsea " > ${MAGMARESULTDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.gseaMAGMA.sh
-#  	qsub -S /bin/bash -N MAGMA.GSEA.${PROJECTNAME} -hold_jid MAGMA.ANNOTATION.${PROJECTNAME} -o ${MAGMARESULTDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.gseaMAGMA.log -e ${MAGMARESULTDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.gseaMAGMA.errors -l h_vmem=${QMEMMAGMA} -l h_rt=${QRUNTIMEMAGMA} -wd ${MAGMARESULTDIR} ${MAGMARESULTDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.gseaMAGMA.sh
+
+	echobold "#========================================================================================================"
+	echobold "#== GENE-BASED ANALYSIS OF META-ANALYSIS RESULTS USING VEGAS2"
+	echobold "#========================================================================================================"
+	echobold "#"
+	### REQUIRED: VEGAS/VEGAS2 settings.
+	### Note: we do `cd ${VEGASDIR}` because VEGAS is making temp-files in a special way, 
+	###       adding a date-based number in front of the input/output files.
+	echo "Creating VEGAS input files..." 
+	mkdir -v ${SUBPROJECTDIR}/vegas
+	VEGASRESULTDIR=${SUBPROJECTDIR}/vegas
+	chmod -Rv a+rwx ${VEGASRESULTDIR}
+	echo "...per chromosome."
+	
+	while IFS='' read -r GWASCOHORT || [[ -n "$GWASCOHORT" ]]; do
+			LINE=${GWASCOHORT}
+			COHORT=$(echo "${LINE}" | awk '{ print $1 }')
+			echo "     * ${COHORT}"
+		for CHR in $(seq 1 23); do
+			if [[ $CHR -le 22 ]]; then 
+				echo "Processing chromosome ${CHR}..."
+				echo "zcat ${PARSEDDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.FINAL.txt.gz | ${SCRIPTS}/parseTable.pl --col VARIANTID,CHR,P | awk ' \$2==${CHR} ' | awk '{ print \$1, \$3 }' | tail -n +2 > ${VEGASRESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.forVEGAS.txt " > ${VEGASRESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.sh
+				echo "cd ${VEGASRESULTDIR} " >> ${VEGASRESULTDIR}/meta.results.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.sh
+				echo "$VEGAS2 -G -snpandp ${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.forVEGAS.txt -custom ${VEGAS2POP}.chr${CHR} -glist ${VEGAS2GENELIST} -upper ${VEGAS2UPPER} -lower ${VEGAS2LOWER} -chr ${CHR} -out ${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.fromVEGAS " >> ${VEGASRESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.sh
+# 				qsub -S /bin/bash -N VEGAS2.${PROJECTNAME}.chr${CHR} -hold_jid METASUM -o ${VEGASRESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.log -e ${VEGASRESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.errors -l h_vmem=${QMEMVEGAS} -l h_rt=${QRUNTIMEVEGAS} -wd ${VEGASRESULTDIR} ${VEGASRESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.sh
+		
+			elif [[ $CHR -eq 23 ]]; then  
+				echo "Processing chromosome X..."
+				echo "zcat ${PARSEDDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.FINAL.txt.gz | ${SCRIPTS}/parseTable.pl --col VARIANTID,CHR,P | awk ' \$2==\"X\" ' | awk '{ print \$1, \$3 }' | tail -n +2 > ${VEGASRESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.forVEGAS.txt " > ${VEGASRESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.sh
+				echo "cd ${VEGASRESULTDIR} " >> ${VEGASRESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.sh
+				echo "$VEGAS2 -G -snpandp ${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.forVEGAS.txt -custom ${VEGAS2POP}.chr${CHR} -glist ${VEGAS2GENELIST} -upper ${VEGAS2UPPER} -lower ${VEGAS2LOWER} -chr ${CHR} -out ${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.fromVEGAS " >> ${VEGASRESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.sh
+# 				qsub -S /bin/bash -N VEGAS2.${PROJECTNAME}.chr${CHR} -hold_jid METASUM -o ${VEGASRESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.log -e ${VEGASRESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.errors -l h_vmem=${QMEMVEGAS} -l h_rt=${QRUNTIMEVEGAS} -wd ${VEGASRESULTDIR} ${VEGASRESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.sh
+		
+			else
+				echo "*** ERROR *** Something is rotten in the City of Gotham; most likely a typo. Double back, please."	
+				exit 1
+			fi
+
+		done
+	done < ${GWASFILES}
+
+	echobold "#========================================================================================================"
+	echobold "#== GENE-BASED ANALYSIS OF META-ANALYSIS RESULTS USING MAGMA"
+	echobold "#========================================================================================================"
+	echobold "#"
+	### REQUIRED: MAGMA settings.
+	### Head for MAGMA input
+	### SNP CHR BP P NOBS 
+	echo "Creating MAGMA input files..." 
+	mkdir -v ${SUBPROJECTDIR}/magma
+	MAGMARESULTDIR=${SUBPROJECTDIR}/magma
+	chmod -Rv a+rwx ${MAGMARESULTDIR}
+	echo " - whole-genome..."
+ 	echo "echo \"SNP CHR BP P NOBS\" > ${MAGMARESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.forMAGMA.txt " > ${MAGMARESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.runMAGMA.sh
+ 	echo "zcat ${PARSEDDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.FINAL.txt.gz | ${SCRIPTS}/parseTable.pl --col VARIANTID,CHR,POS,P,N | tail -n +2 | awk '{ print \$1, \$2, \$3, \$4, int(\$5) }' >> ${MAGMARESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.forMAGMA.txt " >> ${MAGMARESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.runMAGMA.sh
+	echo "${MAGMA} --annotate --snp-loc ${MAGMARESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.forMAGMA.txt --gene-loc ${MAGMAGENES} --out ${MAGMARESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.fromMAGMA.annotated " >> ${MAGMARESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.runMAGMA.sh
+# 	qsub -S /bin/bash -N MAGMA.ANALYSIS.${PROJECTNAME} -hold_jid METASUM -o ${MAGMARESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.runMAGMA.log -e ${MAGMARESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.runMAGMA.errors -l h_vmem=${QMEMMAGMA} -l h_rt=${QRUNTIMEMAGMA} -wd ${MAGMARESULTDIR} ${MAGMARESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.runMAGMA.sh
+
+	echo "${MAGMA} --bfile ${MAGMAPOP} synonyms=${MAGMADBSNP} synonym-dup=drop-dup --pval ${MAGMARESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.forMAGMA.txt ncol=NOBS --gene-annot ${MAGMARESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.fromMAGMA.annotated.genes.annot --out ${MAGMARESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.fromMAGMA.genesannotated " > ${MAGMARESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.annotMAGMA.sh
+#  	qsub -S /bin/bash -N MAGMA.ANNOTATION.${PROJECTNAME} -hold_jid MAGMA.ANALYSIS.${PROJECTNAME} -o ${MAGMARESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.annotMAGMA.log -e ${MAGMARESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.annotMAGMA.errors -l h_vmem=${QMEMMAGMA} -l h_rt=${QRUNTIMEMAGMA} -wd ${MAGMARESULTDIR} ${MAGMARESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.annotMAGMA.sh
+
+ 	echo "${MAGMA} --gene-results ${MAGMARESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.fromMAGMA.genesannotated.genes.raw --set-annot ${MAGMAGENESETS} --out ${MAGMARESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.fromMAGMA.gsea " > ${MAGMARESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.gseaMAGMA.sh
+#  	qsub -S /bin/bash -N MAGMA.GSEA.${PROJECTNAME} -hold_jid MAGMA.ANNOTATION.${PROJECTNAME} -o ${MAGMARESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.gseaMAGMA.log -e ${MAGMARESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.gseaMAGMA.errors -l h_vmem=${QMEMMAGMA} -l h_rt=${QRUNTIMEMAGMA} -wd ${MAGMARESULTDIR} ${MAGMARESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.gseaMAGMA.sh
  
 	### END of if-else statement for the number of command-line arguments passed ###
 fi 

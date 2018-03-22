@@ -71,9 +71,9 @@ script_arguments_error() {
 echobold "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 echobold "          GWASWRAPPER: WRAPPER FOR PARSED AND CLEANED GENOME-WIDE ASSOCIATION STUDIES"
 echobold ""
-echobold "* Version:      v1.0.0"
+echobold "* Version:      v1.0.1"
 echobold ""
-echobold "* Last update:  2018-03-21"
+echobold "* Last update:  2018-03-22"
 echobold "* Written by:   Sander W. van der Laan | s.w.vanderlaan@gmail.com."
 echobold "* Description:  Produce concatenated parsed, and cleaned GWAS data."
 echobold ""
@@ -103,10 +103,13 @@ else
 	echo ""
 	echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 	echo "Processing arguments..."
-	PROJECTDIR=${1} # depends on arg1
-	COHORTNAME=${2} # depends on arg2
-	BASEFILENAME=${3} # depends on arg3
-	VARIANTTYPE=${4} # depends on arg4
+	# Loading the configuration file (please refer to the GBASToolKit-Manual for specifications of this file). 
+	source "$1" # Depends on arg1.
+	
+	CONFIGURATIONFILE="$1" # Depends on arg1 -- but also on where it resides!!!
+	PROJECTDIR=${2} # depends on arg1
+	COHORTNAME=${3} # depends on arg2
+	BASEFILENAME=${4} # depends on arg3
 
 	echo ""
 	echo "All arguments are passed. These are the settings:"
@@ -114,39 +117,31 @@ else
 	echo "Cohort name.............................: "${COHORTNAME}
 	echo "Cohort's raw file name..................: "${BASEFILENAME}.txt.gz
 	echo "The basename of the cohort is...........: "${BASEFILENAME}
-	echo "Variant type in cohort's data...........: "${VARIANTTYPE}
+	echo "Was quality control applied?............: "${GWASQC}
 	
 	echo ""
 	echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 	echo "Wrapping up split files and checking parsing and harmonizing..."
 	echo ""
-	echo "* Making necessary 'readme' files..."
-	echo "Cohort File VariantType Parsing ParsingErrorFile" > ${PROJECTDIR}/${COHORTNAME}.wrap.parsed.readme
-	echo "Cohort File VariantType Cleaning CleaningErrorFile" > ${PROJECTDIR}/${COHORTNAME}.wrap.cleaned.readme
 	
+	echo "* Making necessary 'readme' files..."
+	echo "Cohort File Parsing ParsingErrorFile" > ${PROJECTDIR}/${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.wrap.parsed.readme
+
 	### HEADER .pdat-file
 	### Marker	MarkerOriginal	CHR	BP	Strand	EffectAllele	OtherAllele	MinorAllele	MajorAllele	EAF	MAF	MAC	HWE_P	Info	Beta	BetaMinor	SE	P	N	N_cases	N_controls	Imputed
 	### 1	    2               3   4   5       6               7           8           9           10  11  12  13      14      15      16          17  18  19  20      21          22
-	
-	### HEADER cdat-file
-	### VariantID	Marker	MarkerOriginal	CHR	BP	Strand	EffectAllele	OtherAllele	MinorAllele	MajorAllele	EAF	MAF	MAC	HWE_P	Info	Beta	BetaMinor	SE	P	N	N_cases	N_controls	Imputed	Reference	VT
-	### 1		    2       3               4   5   6       7               8           9           10          11  12  13  14      15	    16	    17          18  19  20  21      22          23      24			25
-	
+
 	echo ""	
 	echo "* Making necessary 'summarized' files..."
-	echo "Marker	MarkerOriginal	CHR	BP	Strand	EffectAllele	OtherAllele	MinorAllele	MajorAllele	EAF	MAF	MAC	HWE_P	Info	Beta	BetaMinor	SE	P	N	N_cases	N_controls	Imputed" > ${PROJECTDIR}/${COHORTNAME}.pdat
-	echo "VariantID	Marker	MarkerOriginal	CHR	BP	Strand	EffectAllele	OtherAllele	MinorAllele	MajorAllele	EAF	MAF	MAC	HWE_P	Info	Beta	BetaMinor	SE	P	N	N_cases	N_controls	Imputed	Reference VT" > ${PROJECTDIR}/${COHORTNAME}.cdat
-	
-		
+	echo "Marker	MarkerOriginal	CHR	BP	Strand	EffectAllele	OtherAllele	MinorAllele	MajorAllele	EAF	MAF	MAC	HWE_P	Info	Beta	BetaMinor	SE	P	N	N_cases	N_controls	Imputed" > ${PROJECTDIR}/${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.pdat
+
 	### Setting the patterns to look for -- never change this
 	PARSEDPATTERN="All done parsing"
-	CLEANEDPATTERN="All done cleaning"
-	
+
 	echo ""
 	echo "We will look for the following pattern in the ..."
 	echo "...parsed log file...........: [ ${PARSEDPATTERN} ]"
-	echo "...cleaned log file..........: [ ${CLEANEDPATTERN} ]"
-	
+
 	echo ""
 	echo "* Check parsing of GWAS datasets."
 	for ERRORFILE in ${PROJECTDIR}/gwas.parser.${BASEFILENAME}.*.log; do
@@ -158,15 +153,15 @@ else
 		BASEPARSEDFILE=$(echo "${BASEERRORFILE}" | sed -e "s/^$prefix_parsed//")
 		echo ""
 		echo "* checking split chunk: [ ${BASEPARSEDFILE} ] for pattern \"${PARSEDPATTERN}\"..."
-	
+
 		echo "Error file...........................:" ${BASENAMEERRORFILE}
 		if [[ ! -z $(grep "${PARSEDPATTERN}" "${ERRORFILE}") ]]; then 
 			PARSEDMESSAGE=$(echosucces "successfully parsed")
 			PARSEDMESSAGEREADME=$(echo "success")
 			echo "Parsing report.......................: ${PARSEDMESSAGE}"
-			echo "${COHORTNAME} ${BASEFILENAME}.txt.gz ${VARIANTYPE} ${PARSEDMESSAGEREADME} ${BASENAMEERRORFILE}" >> ${PROJECTDIR}/${COHORTNAME}.wrap.parsed.readme
+			echo "${COHORTNAME} ${BASEFILENAME}.txt.gz ${PARSEDMESSAGEREADME} ${BASENAMEERRORFILE}" >> ${PROJECTDIR}/${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.wrap.parsed.readme
 			echo "- concatenating data to [ ${PROJECTDIR}/${COHORTNAME}.pdat ]..."
-			cat ${PROJECTDIR}/${BASEPARSEDFILE}.pdat | tail -n +2 | awk -F '\t' '{ print $0 }' >> ${PROJECTDIR}/${COHORTNAME}.pdat
+			cat ${PROJECTDIR}/${BASEPARSEDFILE}.pdat | tail -n +2 | awk -F '\t' '{ print $0 }' >> ${PROJECTDIR}/${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.pdat
 			echo "- removing files [ ${PROJECTDIR}/${BASEPARSEDFILE}[.pdat/.errors/.log] ]..."
 			rm -v ${PROJECTDIR}/${BASEPARSEDFILE}.pdat
 			rm -v ${PROJECTDIR}/${prefix_parsed}${BASEPARSEDFILE}.errors
@@ -183,61 +178,88 @@ else
 			PARSEDMESSAGE=$(echosucces "parsing failure")
 			PARSEDMESSAGEREADME=$(echo "failure")
 			echo "Parsing report.......................: ${PARSEDMESSAGE}"
-			echo "${COHORTNAME} ${BASEFILENAME}.txt.gz ${VARIANTYPE} ${PARSEDMESSAGEREADME} ${BASENAMEERRORFILE}" >> ${PROJECTDIR}/${COHORTNAME}.wrap.parsed.readme
+			echo "${COHORTNAME} ${BASEFILENAME}.txt.gz ${PARSEDMESSAGEREADME} ${BASENAMEERRORFILE}" >> ${PROJECTDIR}/${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.wrap.parsed.readme
 		fi
-		
+	
 		echo ""
 	done
-	
+
 	echo ""
-	echo "* Check cleaning of parsed GWAS datasets."
-	for ERRORFILE in ${PROJECTDIR}/gwas.cleaner.${BASEFILENAME}.*.log; do
-		### determine basename of the ERRORFILE
-		BASENAMEERRORFILE=$(basename ${ERRORFILE})
-		BASEERRORFILE=$(basename ${ERRORFILE} .log)
-		prefix_cleaned='gwas.cleaner.' # removing the 'gwas2ref.harmonizer.'-part from the ERRORFILE
-		BASECLEANEDFILE=$(echo "${BASEERRORFILE}" | sed -e "s/^$prefix_cleaned//")
+	if [[ ${GWASQC} = "YES" ]]; then
+		
+		echo "GWAS quality control was applied -- wrapping up these results."
 		echo ""
-		echo "* checking split chunk: [ ${BASECLEANEDFILE} ] for pattern \"${CLEANEDPATTERN}\"..."
+		echo "* Making necessary 'readme' files..."
+		echo "Cohort File Cleaning CleaningErrorFile" > ${PROJECTDIR}/${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.wrap.cleaned.readme
 	
-		echo "Error file...........................:" ${BASENAMEERRORFILE}
-		if [[ ! -z $(grep "${CLEANEDPATTERN}" "${ERRORFILE}") ]]; then 
-			CLEANEDMESSAGE=$(echosucces "successfully cleaned")
-			CLEANEDMESSAGEREADME=$(echo "success")
-			echo "Cleaning report......................: ${CLEANEDMESSAGE}"
-			echo "- concatenating data to [ ${PROJECTDIR}/${COHORTNAME}.rdat ]..."
-			echo "${COHORTNAME} ${BASEFILENAME}.txt.gz ${VARIANTYPE} ${CLEANEDMESSAGEREADME} ${BASENAMEERRORFILE}" >> ${PROJECTDIR}/${COHORTNAME}.wrap.cleaned.readme
-			cat ${PROJECTDIR}/${BASECLEANEDFILE}.cdat | tail -n +2  | awk -F '\t' '{ print $0 }' >> ${PROJECTDIR}/${COHORTNAME}.cdat
-			echo "- removing files [ ${PROJECTDIR}/${BASECLEANEDFILE}[.cdat/.errors/.log] ]..."
-			rm -v ${PROJECTDIR}/${BASECLEANEDFILE}.cdat
-			rm -v ${PROJECTDIR}/${prefix_cleaned}${BASECLEANEDFILE}.errors
-			rm -v ${PROJECTDIR}/${prefix_cleaned}${BASECLEANEDFILE}.log
-			rm -v ${PROJECTDIR}/${prefix_cleaned}${BASECLEANEDFILE}.sh
-# 			rm -v ${PROJECTDIR}/*${BASEPARSEDFILE}_DEBUG_GWAS_CLEANER.RData
-		else
-			echoerrorflash "*** Error *** The pattern \"${CLEANEDPATTERN}\" was NOT found in [ ${BASENAMEERRORFILE} ]..."
-			echoerror "Reported in the [ ${BASENAMEERRORFILE} ]:      "
-			echoerror "####################################################################################"
-			cat ${ERRORFILE}
-			echoerror "####################################################################################"
-			CLEANEDMESSAGE=$(echosucces "cleaning failure")
-			CLEANEDMESSAGEREADME=$(echo "failure")
-			echo "Cleaning report......................: ${CLEANEDMESSAGE}"
-			echo "${COHORTNAME} ${BASEFILENAME}.txt.gz ${VARIANTYPE} ${CLEANEDMESSAGEREADME} ${BASENAMEERRORFILE}" >> ${PROJECTDIR}/${COHORTNAME}.wrap.cleaned.readme
-		fi
+		### HEADER .pdat-file
+		### Marker	MarkerOriginal	CHR	BP	Strand	EffectAllele	OtherAllele	MinorAllele	MajorAllele	EAF	MAF	MAC	HWE_P	Info	Beta	BetaMinor	SE	P	N	N_cases	N_controls	Imputed
+		### 1	    2               3   4   5       6               7           8           9           10  11  12  13      14      15      16          17  18  19  20      21          22
+	
+		echo ""	
+		echo "* Making necessary 'summarized' files..."
+		echo "VariantID	Marker	MarkerOriginal	CHR	BP	Strand	EffectAllele	OtherAllele	MinorAllele	MajorAllele	EAF	MAF	MAC	HWE_P	Info	Beta	BetaMinor	SE	P	N	N_cases	N_controls	Imputed	Reference VT" > ${PROJECTDIR}/${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.cdat
+	
+		### Setting the patterns to look for -- never change this
+		CLEANEDPATTERN="All done cleaning"
 		
 		echo ""
-	done
-	echo ""
+		echo "We will look for the following pattern in the ..."
+		echo "...cleaned log file..........: [ ${CLEANEDPATTERN} ]"
+		
+		echo ""
+		echo "* Check cleaning of parsed GWAS datasets."
+		for ERRORFILE in ${PROJECTDIR}/gwas.cleaner.${BASEFILENAME}.*.log; do
+			### determine basename of the ERRORFILE
+			BASENAMEERRORFILE=$(basename ${ERRORFILE})
+			BASEERRORFILE=$(basename ${ERRORFILE} .log)
+			prefix_cleaned='gwas.cleaner.' # removing the 'gwas2ref.harmonizer.'-part from the ERRORFILE
+			BASECLEANEDFILE=$(echo "${BASEERRORFILE}" | sed -e "s/^$prefix_cleaned//")
+			echo ""
+			echo "* checking split chunk: [ ${BASECLEANEDFILE} ] for pattern \"${CLEANEDPATTERN}\"..."
 	
+			echo "Error file...........................:" ${BASENAMEERRORFILE}
+			if [[ ! -z $(grep "${CLEANEDPATTERN}" "${ERRORFILE}") ]]; then 
+				CLEANEDMESSAGE=$(echosucces "successfully cleaned")
+				CLEANEDMESSAGEREADME=$(echo "success")
+				echo "Cleaning report......................: ${CLEANEDMESSAGE}"
+				echo "- concatenating data to [ ${PROJECTDIR}/${COHORTNAME}.rdat ]..."
+				echo "${COHORTNAME} ${BASEFILENAME}.txt.gz ${CLEANEDMESSAGEREADME} ${BASENAMEERRORFILE}" >> ${PROJECTDIR}/${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.wrap.cleaned.readme
+				cat ${PROJECTDIR}/${BASECLEANEDFILE}.cdat | tail -n +2  | awk -F '\t' '{ print $0 }' >> ${PROJECTDIR}/${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.cdat
+				echo "- removing files [ ${PROJECTDIR}/${BASECLEANEDFILE}[.cdat/.errors/.log] ]..."
+				rm -v ${PROJECTDIR}/${BASECLEANEDFILE}.cdat
+				rm -v ${PROJECTDIR}/${prefix_cleaned}${BASECLEANEDFILE}.errors
+				rm -v ${PROJECTDIR}/${prefix_cleaned}${BASECLEANEDFILE}.log
+				rm -v ${PROJECTDIR}/${prefix_cleaned}${BASECLEANEDFILE}.sh
+	# 			rm -v ${PROJECTDIR}/*${BASEPARSEDFILE}_DEBUG_GWAS_CLEANER.RData
+			else
+				echoerrorflash "*** Error *** The pattern \"${CLEANEDPATTERN}\" was NOT found in [ ${BASENAMEERRORFILE} ]..."
+				echoerror "Reported in the [ ${BASENAMEERRORFILE} ]:      "
+				echoerror "####################################################################################"
+				cat ${ERRORFILE}
+				echoerror "####################################################################################"
+				CLEANEDMESSAGE=$(echosucces "cleaning failure")
+				CLEANEDMESSAGEREADME=$(echo "failure")
+				echo "Cleaning report......................: ${CLEANEDMESSAGE}"
+				echo "${COHORTNAME} ${BASEFILENAME}.txt.gz ${CLEANEDMESSAGEREADME} ${BASENAMEERRORFILE}" >> ${PROJECTDIR}/${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.wrap.cleaned.readme
+			fi
+		
+			echo ""
+		done
+		
+	fi
+			
 	echo ""
 	echo "Gzipping da [ ${COHORTNAME}.pdat ] shizzle..."
-	gzip -v ${PROJECTDIR}/${COHORTNAME}.pdat
-	
-	echo ""
-	echo "Gzipping da [ ${COHORTNAME}.cdat ] shizzle..."
-	gzip -v ${PROJECTDIR}/${COHORTNAME}.cdat
+	gzip -v ${PROJECTDIR}/${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.pdat
+	mv -v ${PROJECTDIR}/${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.pdat.gz ${PROJECTDIR}/${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.FINAL.txt.gz
 
+	if [[ ${GWASQC} = "YES" ]]; then	
+		echo ""
+		echo "Gzipping da [ ${COHORTNAME}.cdat ] shizzle..."
+		gzip -v ${PROJECTDIR}/${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.cdat
+		mv -v ${PROJECTDIR}/${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.cdat.gz ${PROJECTDIR}/${COHORTNAME}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.FINAL.txt.gz
+	fi
 	
 ### END of if-else statement for the number of command-line arguments passed ###
 fi 

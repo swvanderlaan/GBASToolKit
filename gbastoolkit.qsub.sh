@@ -34,15 +34,15 @@ echo "FIRST step: prepare GWAS files."
 
 # zcat ${ORIGINALDATA}/K_GWAMA_06Oct2017.qced.txt.gz | ${SCRIPTS}/parseTable.pl --col rsid,chr,pos,reference_allele,other_allele,eaf,beta,se,p.value,n_samples > ${ORIGINALDATA}/K_GWAMA_06Oct2017.qced.PREPPED.txt
 # zcat ${ORIGINALDATA}/NA_GWAMA_06Oct2017.qced.txt.gz | ${SCRIPTS}/parseTable.pl --col rsid,chr,pos,reference_allele,other_allele,eaf,beta,se,p.value,n_samples > ${ORIGINALDATA}/NA_GWAMA_06Oct2017.qced.PREPPED.txt
-# zcat ${ORIGINALDATA}/K_GWAMA_combined_01Mar2018.qced.txt.gz | ${SCRIPTS}/parseTable.pl --col rsid,chr,pos,reference_allele,other_allele,eaf,beta,se,p.value,n_samples > ${ORIGINALDATA}/K_GWAMA_combined_01Mar2018.qced.PREPPED.txt
-# zcat ${ORIGINALDATA}/Na_GWAMA_combined_01Mar2018.qced.txt.gz | ${SCRIPTS}/parseTable.pl --col rsid,chr,pos,reference_allele,other_allele,eaf,beta,se,p.value,n_samples > ${ORIGINALDATA}/Na_GWAMA_combined_01Mar2018.qced.PREPPED.txt
+zcat ${ORIGINALDATA}/K_GWAMA_combined_01Mar2018.qced.txt.gz | awk '$1 == "rsid" | $23 == "pass" ' | ${SCRIPTS}/parseTable.pl --col rsid,chr,pos,reference_allele,other_allele,eaf,beta,se,p.value,n_samples > ${ORIGINALDATA}/K_GWAMA_combined_01Mar2018.qced.PREPPED.txt
+zcat ${ORIGINALDATA}/Na_GWAMA_combined_01Mar2018.qced.txt.gz | awk '$1 == "rsid" | $23 == "pass" ' | ${SCRIPTS}/parseTable.pl --col rsid,chr,pos,reference_allele,other_allele,eaf,beta,se,p.value,n_samples > ${ORIGINALDATA}/Na_GWAMA_combined_01Mar2018.qced.PREPPED.txt
 
 echo ""
 echo "SECOND step: perform GBAS."
 
-${GBASTOOLKIT}/gbastoolkit.sh $(pwd)/gbastoolkit.config $(pwd)/gastoolkit.files.list
-${GBASTOOLKIT}/gbastoolkit.sh $(pwd)/gbastoolkit.config $(pwd)/gastoolkit.files.list
-${GBASTOOLKIT}/gbastoolkit.sh $(pwd)/gbastoolkit.config $(pwd)/gastoolkit.files.list
+${GBASTOOLKIT}/gbastoolkit.sh $(pwd)/gbastoolkit.config $(pwd)/gbastoolkit.files.list
+${GBASTOOLKIT}/gbastoolkit.sh $(pwd)/gbastoolkit.config $(pwd)/gbastoolkit.files.list
+${GBASTOOLKIT}/gbastoolkit.sh $(pwd)/gbastoolkit.config $(pwd)/gbastoolkit.files.list
 
 
 
