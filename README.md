@@ -3,7 +3,7 @@ GBASToolKit
 
 [![DOI](https://zenodo.org/badge/126183592.svg)](https://zenodo.org/badge/latestdoi/126183592)
 
-** Beta release v1.0 "Indy" **
+** Beta release v1.0-beta1 "Indy" **
 
 **NOTE: At the moment you can now perform a gene-based analysis using 1000G phase 1 in VEGAS2; MAGMA also has the option to use other references. We are updating some items, so please check back. For a list of items we are working on check the bottom of this readme.**
 
