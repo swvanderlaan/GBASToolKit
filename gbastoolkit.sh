@@ -169,7 +169,7 @@ else
 	### SETTING UP THE OUTPUT AND PARSEDDATA DIRECTORIES
 	echo ""
 	### Making raw data directories, unless they already exist. Depends on arg2.
-	if [[ ${REFERENCE} = "1Gp1" ]]; then
+	if [[ ${REFERENCE} == "1Gp1" ]]; then
 
 	  	echo ""
 	  	echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
@@ -192,7 +192,7 @@ else
 	  	echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 	  	echo ""
 	
-	elif [[ ${REFERENCE} = "HM2" || ${REFERENCE} = "GONL4" || ${REFERENCE} = "GONL5" || ${REFERENCE} = "1Gp3" || ${REFERENCE} = "1Gp3GONL5" ]]; then
+	elif [[ ${REFERENCE} == "HM2" || ${REFERENCE} == "GONL4" || ${REFERENCE} == "GONL5" || ${REFERENCE} == "1Gp3" || ${REFERENCE} == "1Gp3GONL5" ]]; then
 		echoerrornooption "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 	  	echoerrornooption ""
 	  	echoerrorflashnooption "               *** Oh, computer says no! This option is not available yet. ***"
@@ -285,7 +285,7 @@ else
 # 			echo "Rscript ${SCRIPTS}/gwas.parser.R -p ${PROJECTDIR} -d ${SPLITFILE} -o ${OUTPUTDIRNAME}/${SUBPROJECTDIRNAME}/PARSED/${COHORT} " > ${RAWDATACOHORT}/gwas.parser.${BASESPLITFILE}.sh
 # 			qsub -S /bin/bash -N gwas.parser.${BASEFILE} -o ${RAWDATACOHORT}/gwas.parser.${BASESPLITFILE}.log -e ${RAWDATACOHORT}/gwas.parser.${BASESPLITFILE}.errors -l h_rt=${QRUNTIMEPARSER} -l h_vmem=${QMEMPARSER} -M ${QMAIL} -m ${QMAILOPTIONS} -cwd ${RAWDATACOHORT}/gwas.parser.${BASESPLITFILE}.sh
 # 			
-# 			if [[ ${GWASQC} = "YES" ]]; then
+# 			if [[ ${GWASQC} == "YES" ]]; then
 # 			 
 # 				echobold "#========================================================================================================"
 # 				echobold "#== CLEANING UP THE REFORMATTED GWAS DATA"
@@ -305,7 +305,7 @@ else
 # 				echo "${SCRIPTS}/gwas.cleaner.R -d ${SPLITFILE}.pdat -f ${BASESPLITFILE} -o ${RAWDATACOHORT} -e ${BETA} -s ${SE} -m ${MAF} -c ${MAC} -i ${INFO} -w ${HWE}" >> ${RAWDATACOHORT}/gwas.cleaner.${BASESPLITFILE}.sh
 # 				qsub -S /bin/bash -N gwas.cleaner.${BASEFILE} -hold_jid gwas.parser.${BASEFILE} -o ${RAWDATACOHORT}/gwas.cleaner.${BASESPLITFILE}.log -e ${RAWDATACOHORT}/gwas.cleaner.${BASESPLITFILE}.errors -l h_rt=${QRUNTIMECLEANER} -l h_vmem=${QMEMCLEANER} -M ${QMAIL} -m ${QMAILOPTIONS} -cwd ${RAWDATACOHORT}/gwas.cleaner.${BASESPLITFILE}.sh
 # 			
-# 			elif [[ ${GWASQC} = "NO" ]]; then
+# 			elif [[ ${GWASQC} == "NO" ]]; then
 # 			
 # 				echobold "#========================================================================================================"
 # 				echobold "#== THE REFORMATTED GWAS DATA IS NOT CLEANED"
@@ -334,7 +334,7 @@ else
 # 		echobold "#========================================================================================================"
 # 		echobold "#"
 # 		
-# 		if [[ ${GWASQC} = "YES" ]]; then
+# 		if [[ ${GWASQC} == "YES" ]]; then
 # 
 # 			echo ""
 # 			echo "* Wrapping up parsed, reformatted, and cleaned data for cohort ${COHORT}..."
@@ -343,7 +343,7 @@ else
 # 			echo "${SCRIPTS}/gwas.wrapper.sh ${CONFIGURATIONFILE} ${RAWDATACOHORT} ${COHORT} ${BASEFILE}" > ${RAWDATACOHORT}/gwas.wrapper.${BASEFILE}.sh
 # 			qsub -S /bin/bash -N gwas.wrapper -hold_jid gwas.cleaner.${BASEFILE} -o ${RAWDATACOHORT}/gwas.wrapper.${BASEFILE}.log -e ${RAWDATACOHORT}/gwas.wrapper.${BASEFILE}.errors -l h_rt=${QRUNTIMEWRAPPER} -l h_vmem=${QMEMWRAPPER} -M ${QMAIL} -m ${QMAILOPTIONS} -cwd ${RAWDATACOHORT}/gwas.wrapper.${BASEFILE}.sh
 # 
-# 		elif [[ ${GWASQC} = "NO" ]]; then
+# 		elif [[ ${GWASQC} == "NO" ]]; then
 # 
 # 			echo ""
 # 			echo "* Wrapping up parsed and reformatted data for cohort ${COHORT}..."
