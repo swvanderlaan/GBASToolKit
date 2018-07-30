@@ -224,150 +224,150 @@ else
 		exit 1
 	fi
 
-# 	
-# 	echobold "#########################################################################################################"
-# 	echobold "### REFORMAT AND PARSE ORIGINAL GWAS DATA"
-# 	echobold "#########################################################################################################"
-# 	echobold "#"
-# 	echo ""
-# 	echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-# 	echo "Start the reformatting and parsing of each cohort and dataset. "
-# 	echo ""
-# 	
-# 	while IFS='' read -r GWASCOHORT || [[ -n "$GWASCOHORT" ]]; do
-# 			
-# 		LINE=${GWASCOHORT}
-# 		COHORT=$(echo "${LINE}" | awk '{ print $1 }')
-# 		FILE=$(echo "${LINE}" | awk '{ print $2 }')
-# 		
-# 		BASEFILE=$(basename ${FILE} .txt.gz)
-# 		
-# 		if [ ! -d ${PARSEDDIR}/${COHORT} ]; then
-# 	  		echo "Making subdirectory for ${COHORT}..."
-# 	  		mkdir -v ${PARSEDDIR}/${COHORT}
-# 		else
-# 			echo "Directory for ${COHORT} already there."
-# 		fi
-# 		RAWDATACOHORT=${PARSEDDIR}/${COHORT}
-# 		
-# 		echobold "#========================================================================================================"
-# 		echobold "#== REFORMAT AND PARSE ORIGINAL GWAS DATA"
-# 		echobold "#========================================================================================================"
-# 		echobold "#"
-# 		echo ""
-# 		echo "* Chopping up GWAS summary statistics into chunks of ${CHUNKSIZE} variants -- for parallelisation and speedgain..."
-# 		
-# 		### Split up the file in increments of 1000K -- note: the period at the end of '${BASEFILE}' is a separator character
-# 		zcat ${ORIGINALS}/${FILE} | tail -n +2 | split -a 3 -l ${CHUNKSIZE} - ${RAWDATACOHORT}/${BASEFILE}.
-# 		
-# 		## Adding headers -- this is ABSOLUTELY required for the 'gwas.parser.R'.
-# 		for SPLITFILE in ${RAWDATACOHORT}/${BASEFILE}.*; do
-# 			### determine basename of the splitfile
-# 			BASESPLITFILE=$(basename ${SPLITFILE} )
-# 			echo ""
-# 			echo "* Prepping split chunk: [ ${BASESPLITFILE} ]..."
-# 			echo ""
-# 			echo " - heading a temporary file." 
-# 			zcat ${ORIGINALS}/${FILE} | head -1 > ${RAWDATACOHORT}/tmp_file
-# 			echo " - adding the split data to the temporary file."
-# 			cat ${SPLITFILE} >> ${RAWDATACOHORT}/tmp_file
-# 			echo " - renaming the temporary file."
-# 			mv -fv ${RAWDATACOHORT}/tmp_file ${SPLITFILE}
-# 			
-# 			echobold "#========================================================================================================"
-# 			echobold "#== PARSING AND REFORMATTING THE GWAS DATA"
-# 			echobold "#========================================================================================================"
-# 			echobold "#"
-# 			echo ""
-# 			echo "* Parsing data for cohort ${COHORT} [ file: ${BASESPLITFILE} ]."
-# 			### FOR DEBUGGING LOCALLY -- Mac OS X
-# 			### Rscript ${SCRIPTS}/gwas.parser.R -p ${PROJECTDIR} -d ${SPLITFILE} -o ${OUTPUTDIRNAME}/${SUBPROJECTDIRNAME}/PARSED/${COHORT} 
-# 			echo "Rscript ${SCRIPTS}/gwas.parser.R -p ${PROJECTDIR} -d ${SPLITFILE} -o ${OUTPUTDIRNAME}/${SUBPROJECTDIRNAME}/PARSED/${COHORT} " > ${RAWDATACOHORT}/gwas.parser.${BASESPLITFILE}.sh
-# 			qsub -S /bin/bash -N gwas.parser.${BASEFILE} -o ${RAWDATACOHORT}/gwas.parser.${BASESPLITFILE}.log -e ${RAWDATACOHORT}/gwas.parser.${BASESPLITFILE}.errors -l h_rt=${QRUNTIMEPARSER} -l h_vmem=${QMEMPARSER} -M ${QMAIL} -m ${QMAILOPTIONS} -cwd ${RAWDATACOHORT}/gwas.parser.${BASESPLITFILE}.sh
-# 			
-# 			if [[ ${GWASQC} == "YES" ]]; then
-# 			 
-# 				echobold "#========================================================================================================"
-# 				echobold "#== CLEANING UP THE REFORMATTED GWAS DATA"
-# 				echobold "#========================================================================================================"
-# 				echobold "#"
-# 				echo ""
-# 				echo "* Cleaning harmonized data for [ ${BASESPLITFILE} ] file for cohort ${COHORT} with ${REFERENCE}"
-# 				echo "  using the following pre-specified settings:"
-# 				echo "  - MAF  = ${MAF}"
-# 				echo "  - MAC  = ${MAC}"
-# 				echo "  - HWE  = ${HWE}"
-# 				echo "  - INFO = ${INFO}"
-# 				echo "  - BETA = ${BETA}"
-# 				echo "  - SE   = ${SE}"
-# 				### FOR DEBUGGING LOCALLY -- Mac OS X
-# 				### ${SCRIPTS}/gwas.cleaner.R -d ${SPLITFILE}.pdat -f ${BASESPLITFILE} -o ${RAWDATACOHORT} -e ${BETA} -s ${SE} -m ${MAF} -c ${MAC} -i ${INFO} -w ${HWE}
-# 				echo "${SCRIPTS}/gwas.cleaner.R -d ${SPLITFILE}.pdat -f ${BASESPLITFILE} -o ${RAWDATACOHORT} -e ${BETA} -s ${SE} -m ${MAF} -c ${MAC} -i ${INFO} -w ${HWE}" >> ${RAWDATACOHORT}/gwas.cleaner.${BASESPLITFILE}.sh
-# 				qsub -S /bin/bash -N gwas.cleaner.${BASEFILE} -hold_jid gwas.parser.${BASEFILE} -o ${RAWDATACOHORT}/gwas.cleaner.${BASESPLITFILE}.log -e ${RAWDATACOHORT}/gwas.cleaner.${BASESPLITFILE}.errors -l h_rt=${QRUNTIMECLEANER} -l h_vmem=${QMEMCLEANER} -M ${QMAIL} -m ${QMAILOPTIONS} -cwd ${RAWDATACOHORT}/gwas.cleaner.${BASESPLITFILE}.sh
-# 			
-# 			elif [[ ${GWASQC} == "NO" ]]; then
-# 			
-# 				echobold "#========================================================================================================"
-# 				echobold "#== THE REFORMATTED GWAS DATA IS NOT CLEANED"
-# 				echobold "#========================================================================================================"
-# 				echobold "#"
-# 		
-# 			else
-# 			  	echoerror "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-# 			  	echoerror ""
-# 			  	echoerrorflash "                  *** Oh, computer says no! Argument not recognised. ***"
-# 			  	echoerror "You should choose whether you want to apply quality control on the parsed and reformatted GWAS data, you"
-# 			  	echoerror "have the following options (please also refer to the configuration-file and the GBASToolKit Manual):"
-# 			  	echoerror " - [YES]  apply quality control."
-# 			  	echoerror " - [No]   do not apply quality control."
-# 			  	echoerror "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-# 				### The wrong arguments are passed, so we'll exit the script now!
-# 				echo ""
-# 				script_copyright_message
-# 				exit 1
-# 			fi
-# 
-# 		done
-# 
-# 		echobold "#========================================================================================================"
-# 		echobold "#== WRAPPING THE REFORMATTED GWAS DATA"
-# 		echobold "#========================================================================================================"
-# 		echobold "#"
-# 		
-# 		if [[ ${GWASQC} == "YES" ]]; then
-# 
-# 			echo ""
-# 			echo "* Wrapping up parsed, reformatted, and cleaned data for cohort ${COHORT}..."
-# 			### FOR DEBUGGING LOCALLY -- Mac OS X
-# 			### ${SCRIPTS}/gwas.wrapper.sh ${CONFIGURATIONFILE} ${RAWDATACOHORT} ${COHORT} ${BASEFILE}
-# 			echo "${SCRIPTS}/gwas.wrapper.sh ${CONFIGURATIONFILE} ${RAWDATACOHORT} ${COHORT} ${BASEFILE}" > ${RAWDATACOHORT}/gwas.wrapper.${BASEFILE}.sh
-# 			qsub -S /bin/bash -N gwas.wrapper -hold_jid gwas.cleaner.${BASEFILE} -o ${RAWDATACOHORT}/gwas.wrapper.${BASEFILE}.log -e ${RAWDATACOHORT}/gwas.wrapper.${BASEFILE}.errors -l h_rt=${QRUNTIMEWRAPPER} -l h_vmem=${QMEMWRAPPER} -M ${QMAIL} -m ${QMAILOPTIONS} -cwd ${RAWDATACOHORT}/gwas.wrapper.${BASEFILE}.sh
-# 
-# 		elif [[ ${GWASQC} == "NO" ]]; then
-# 
-# 			echo ""
-# 			echo "* Wrapping up parsed and reformatted data for cohort ${COHORT}..."
-# 			### FOR DEBUGGING LOCALLY -- Mac OS X
-# 			### ${SCRIPTS}/gwas.wrapper.sh ${CONFIGURATIONFILE} ${RAWDATACOHORT} ${COHORT} ${BASEFILE}
-# 			echo "${SCRIPTS}/gwas.wrapper.sh ${CONFIGURATIONFILE} ${RAWDATACOHORT} ${COHORT} ${BASEFILE}" > ${RAWDATACOHORT}/gwas.wrapper.${BASEFILE}.sh
-# 			qsub -S /bin/bash -N gwas.wrapper -hold_jid gwas.parser.${BASEFILE} -o ${RAWDATACOHORT}/gwas.wrapper.${BASEFILE}.log -e ${RAWDATACOHORT}/gwas.wrapper.${BASEFILE}.errors -l h_rt=${QRUNTIMEWRAPPER} -l h_vmem=${QMEMWRAPPER} -M ${QMAIL} -m ${QMAILOPTIONS} -cwd ${RAWDATACOHORT}/gwas.wrapper.${BASEFILE}.sh
-# 
-# 		else
-# 			  	echoerror "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-# 			  	echoerror ""
-# 			  	echoerrorflash "                  *** Oh, computer says no! Argument not recognised. ***"
-# 			  	echoerror "You should choose whether you want to apply quality control on the parsed and reformatted GWAS data, you"
-# 			  	echoerror "have the following options (please also refer to the configuration-file and the GBASToolKit Manual):"
-# 			  	echoerror " - [YES]  apply quality control."
-# 			  	echoerror " - [No]   do not apply quality control."
-# 			  	echoerror "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-# 				### The wrong arguments are passed, so we'll exit the script now!
-# 				echo ""
-# 				script_copyright_message
-# 				exit 1
-# 			fi
-# 	done < ${GWASFILES}
-# 
+	
+	echobold "#########################################################################################################"
+	echobold "### REFORMAT AND PARSE ORIGINAL GWAS DATA"
+	echobold "#########################################################################################################"
+	echobold "#"
+	echo ""
+	echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	echo "Start the reformatting and parsing of each cohort and dataset. "
+	echo ""
+	
+	while IFS='' read -r GWASCOHORT || [[ -n "$GWASCOHORT" ]]; do
+			
+		LINE=${GWASCOHORT}
+		COHORT=$(echo "${LINE}" | awk '{ print $1 }')
+		FILE=$(echo "${LINE}" | awk '{ print $2 }')
+		
+		BASEFILE=$(basename ${FILE} .txt.gz)
+		
+		if [ ! -d ${PARSEDDIR}/${COHORT} ]; then
+	  		echo "Making subdirectory for ${COHORT}..."
+	  		mkdir -v ${PARSEDDIR}/${COHORT}
+		else
+			echo "Directory for ${COHORT} already there."
+		fi
+		RAWDATACOHORT=${PARSEDDIR}/${COHORT}
+		
+		echobold "#========================================================================================================"
+		echobold "#== REFORMAT AND PARSE ORIGINAL GWAS DATA"
+		echobold "#========================================================================================================"
+		echobold "#"
+		echo ""
+		echo "* Chopping up GWAS summary statistics into chunks of ${CHUNKSIZE} variants -- for parallelisation and speedgain..."
+		
+		### Split up the file in increments of 1000K -- note: the period at the end of '${BASEFILE}' is a separator character
+		zcat ${ORIGINALS}/${FILE} | tail -n +2 | split -a 3 -l ${CHUNKSIZE} - ${RAWDATACOHORT}/${BASEFILE}.
+		
+		## Adding headers -- this is ABSOLUTELY required for the 'gwas.parser.R'.
+		for SPLITFILE in ${RAWDATACOHORT}/${BASEFILE}.*; do
+			### determine basename of the splitfile
+			BASESPLITFILE=$(basename ${SPLITFILE} )
+			echo ""
+			echo "* Prepping split chunk: [ ${BASESPLITFILE} ]..."
+			echo ""
+			echo " - heading a temporary file." 
+			zcat ${ORIGINALS}/${FILE} | head -1 > ${RAWDATACOHORT}/tmp_file
+			echo " - adding the split data to the temporary file."
+			cat ${SPLITFILE} >> ${RAWDATACOHORT}/tmp_file
+			echo " - renaming the temporary file."
+			mv -fv ${RAWDATACOHORT}/tmp_file ${SPLITFILE}
+			
+			echobold "#========================================================================================================"
+			echobold "#== PARSING AND REFORMATTING THE GWAS DATA"
+			echobold "#========================================================================================================"
+			echobold "#"
+			echo ""
+			echo "* Parsing data for cohort ${COHORT} [ file: ${BASESPLITFILE} ]."
+			### FOR DEBUGGING LOCALLY -- Mac OS X
+			### Rscript ${SCRIPTS}/gwas.parser.R -p ${PROJECTDIR} -d ${SPLITFILE} -o ${OUTPUTDIRNAME}/${SUBPROJECTDIRNAME}/PARSED/${COHORT} 
+			echo "Rscript ${SCRIPTS}/gwas.parser.R -p ${PROJECTDIR} -d ${SPLITFILE} -o ${OUTPUTDIRNAME}/${SUBPROJECTDIRNAME}/PARSED/${COHORT} " > ${RAWDATACOHORT}/gwas.parser.${BASESPLITFILE}.sh
+			qsub -S /bin/bash -N gwas.parser.${BASEFILE} -o ${RAWDATACOHORT}/gwas.parser.${BASESPLITFILE}.log -e ${RAWDATACOHORT}/gwas.parser.${BASESPLITFILE}.errors -l h_rt=${QRUNTIMEPARSER} -l h_vmem=${QMEMPARSER} -M ${QMAIL} -m ${QMAILOPTIONS} -cwd ${RAWDATACOHORT}/gwas.parser.${BASESPLITFILE}.sh
+			
+			if [[ ${GWASQC} == "YES" ]]; then
+			 
+				echobold "#========================================================================================================"
+				echobold "#== CLEANING UP THE REFORMATTED GWAS DATA"
+				echobold "#========================================================================================================"
+				echobold "#"
+				echo ""
+				echo "* Cleaning harmonized data for [ ${BASESPLITFILE} ] file for cohort ${COHORT} with ${REFERENCE}"
+				echo "  using the following pre-specified settings:"
+				echo "  - MAF  = ${MAF}"
+				echo "  - MAC  = ${MAC}"
+				echo "  - HWE  = ${HWE}"
+				echo "  - INFO = ${INFO}"
+				echo "  - BETA = ${BETA}"
+				echo "  - SE   = ${SE}"
+				### FOR DEBUGGING LOCALLY -- Mac OS X
+				### ${SCRIPTS}/gwas.cleaner.R -d ${SPLITFILE}.pdat -f ${BASESPLITFILE} -o ${RAWDATACOHORT} -e ${BETA} -s ${SE} -m ${MAF} -c ${MAC} -i ${INFO} -w ${HWE}
+				echo "${SCRIPTS}/gwas.cleaner.R -d ${SPLITFILE}.pdat -f ${BASESPLITFILE} -o ${RAWDATACOHORT} -e ${BETA} -s ${SE} -m ${MAF} -c ${MAC} -i ${INFO} -w ${HWE}" >> ${RAWDATACOHORT}/gwas.cleaner.${BASESPLITFILE}.sh
+				qsub -S /bin/bash -N gwas.cleaner.${BASEFILE} -hold_jid gwas.parser.${BASEFILE} -o ${RAWDATACOHORT}/gwas.cleaner.${BASESPLITFILE}.log -e ${RAWDATACOHORT}/gwas.cleaner.${BASESPLITFILE}.errors -l h_rt=${QRUNTIMECLEANER} -l h_vmem=${QMEMCLEANER} -M ${QMAIL} -m ${QMAILOPTIONS} -cwd ${RAWDATACOHORT}/gwas.cleaner.${BASESPLITFILE}.sh
+			
+			elif [[ ${GWASQC} == "NO" ]]; then
+			
+				echobold "#========================================================================================================"
+				echobold "#== THE REFORMATTED GWAS DATA IS NOT CLEANED"
+				echobold "#========================================================================================================"
+				echobold "#"
+		
+			else
+			  	echoerror "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+			  	echoerror ""
+			  	echoerrorflash "                  *** Oh, computer says no! Argument not recognised. ***"
+			  	echoerror "You should choose whether you want to apply quality control on the parsed and reformatted GWAS data, you"
+			  	echoerror "have the following options (please also refer to the configuration-file and the GBASToolKit Manual):"
+			  	echoerror " - [YES]  apply quality control."
+			  	echoerror " - [No]   do not apply quality control."
+			  	echoerror "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+				### The wrong arguments are passed, so we'll exit the script now!
+				echo ""
+				script_copyright_message
+				exit 1
+			fi
+
+		done
+
+		echobold "#========================================================================================================"
+		echobold "#== WRAPPING THE REFORMATTED GWAS DATA"
+		echobold "#========================================================================================================"
+		echobold "#"
+		
+		if [[ ${GWASQC} == "YES" ]]; then
+
+			echo ""
+			echo "* Wrapping up parsed, reformatted, and cleaned data for cohort ${COHORT}..."
+			### FOR DEBUGGING LOCALLY -- Mac OS X
+			### ${SCRIPTS}/gwas.wrapper.sh ${CONFIGURATIONFILE} ${RAWDATACOHORT} ${COHORT} ${BASEFILE}
+			echo "${SCRIPTS}/gwas.wrapper.sh ${CONFIGURATIONFILE} ${RAWDATACOHORT} ${COHORT} ${BASEFILE}" > ${RAWDATACOHORT}/gwas.wrapper.${BASEFILE}.sh
+			qsub -S /bin/bash -N gwas.wrapper -hold_jid gwas.cleaner.${BASEFILE} -o ${RAWDATACOHORT}/gwas.wrapper.${BASEFILE}.log -e ${RAWDATACOHORT}/gwas.wrapper.${BASEFILE}.errors -l h_rt=${QRUNTIMEWRAPPER} -l h_vmem=${QMEMWRAPPER} -M ${QMAIL} -m ${QMAILOPTIONS} -cwd ${RAWDATACOHORT}/gwas.wrapper.${BASEFILE}.sh
+
+		elif [[ ${GWASQC} == "NO" ]]; then
+
+			echo ""
+			echo "* Wrapping up parsed and reformatted data for cohort ${COHORT}..."
+			### FOR DEBUGGING LOCALLY -- Mac OS X
+			### ${SCRIPTS}/gwas.wrapper.sh ${CONFIGURATIONFILE} ${RAWDATACOHORT} ${COHORT} ${BASEFILE}
+			echo "${SCRIPTS}/gwas.wrapper.sh ${CONFIGURATIONFILE} ${RAWDATACOHORT} ${COHORT} ${BASEFILE}" > ${RAWDATACOHORT}/gwas.wrapper.${BASEFILE}.sh
+			qsub -S /bin/bash -N gwas.wrapper -hold_jid gwas.parser.${BASEFILE} -o ${RAWDATACOHORT}/gwas.wrapper.${BASEFILE}.log -e ${RAWDATACOHORT}/gwas.wrapper.${BASEFILE}.errors -l h_rt=${QRUNTIMEWRAPPER} -l h_vmem=${QMEMWRAPPER} -M ${QMAIL} -m ${QMAILOPTIONS} -cwd ${RAWDATACOHORT}/gwas.wrapper.${BASEFILE}.sh
+
+		else
+			  	echoerror "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+			  	echoerror ""
+			  	echoerrorflash "                  *** Oh, computer says no! Argument not recognised. ***"
+			  	echoerror "You should choose whether you want to apply quality control on the parsed and reformatted GWAS data, you"
+			  	echoerror "have the following options (please also refer to the configuration-file and the GBASToolKit Manual):"
+			  	echoerror " - [YES]  apply quality control."
+			  	echoerror " - [No]   do not apply quality control."
+			  	echoerror "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+				### The wrong arguments are passed, so we'll exit the script now!
+				echo ""
+				script_copyright_message
+				exit 1
+			fi
+	done < ${GWASFILES}
+
 
 	echobold "#========================================================================================================"
 	echobold "#== GENE-BASED ANALYSIS OF META-ANALYSIS RESULTS USING VEGAS2"
@@ -400,7 +400,7 @@ else
 			if [[ $CHR -le 22 ]]; then 
 				echo "Processing chromosome ${CHR}..."
 				echo "zcat ${PARSEDDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.FINAL.txt.gz | ${SCRIPTS}/parseTable.pl --col ${VARIANTID},CHR,P | awk ' \$2==${CHR} ' | awk '{ print \$1, \$3 }' | tail -n +2 > ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.forVEGAS.txt " > ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.createVEGAS.sh
-				qsub -S /bin/bash -N VEGAS2.${PROJECTNAME}.chr${CHR}.create -hold_jid gwas.wrapper -o ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.createVEGAS.log -e ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.createVEGAS.errors -l h_vmem=${QMEMVEGAS} -l h_rt=${QRUNTIMEVEGAS} -wd ${VEGASRESULTDIR} ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.createVEGAS.sh
+# 				qsub -S /bin/bash -N VEGAS2.${PROJECTNAME}.chr${CHR}.create -hold_jid gwas.wrapper -o ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.createVEGAS.log -e ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.createVEGAS.errors -l h_vmem=${QMEMVEGAS} -l h_rt=${QRUNTIMEVEGAS} -wd ${VEGASRESULTDIR} ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.createVEGAS.sh
 				
 				echo "cd ${VEGASRESULTDIR}/${COHORT} " > ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.sh
 				echo "$VEGAS2 -G -snpandp ${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.forVEGAS.txt -custom ${VEGAS2POP}.chr${CHR} -glist ${VEGAS2GENELIST} -upper ${VEGAS2UPPER} -lower ${VEGAS2LOWER} -chr ${CHR} -out ${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.fromVEGAS " >> ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.sh
@@ -409,7 +409,7 @@ else
 			elif [[ $CHR -eq 23 ]]; then  
 				echo "Processing chromosome X..."
 				echo "zcat ${PARSEDDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.FINAL.txt.gz | ${SCRIPTS}/parseTable.pl --col ${VARIANTID},CHR,P | awk ' \$2==\"X\" ' | awk '{ print \$1, \$3 }' | tail -n +2 > ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.forVEGAS.txt " > ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.createVEGAS.sh
-				qsub -S /bin/bash -N VEGAS2.${PROJECTNAME}.chr${CHR}.create -hold_jid gwas.wrapper -o ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.createVEGAS.log -e ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.createVEGAS.errors -l h_vmem=${QMEMVEGAS} -l h_rt=${QRUNTIMEVEGAS} -wd ${VEGASRESULTDIR} ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.createVEGAS.sh
+# 				qsub -S /bin/bash -N VEGAS2.${PROJECTNAME}.chr${CHR}.create -hold_jid gwas.wrapper -o ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.createVEGAS.log -e ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.createVEGAS.errors -l h_vmem=${QMEMVEGAS} -l h_rt=${QRUNTIMEVEGAS} -wd ${VEGASRESULTDIR} ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.createVEGAS.sh
 				
 				echo "cd ${VEGASRESULTDIR}/${COHORT} " > ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.sh
 				echo "$VEGAS2 -G -snpandp ${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.forVEGAS.txt -custom ${VEGAS2POP}.chr${CHR} -glist ${VEGAS2GENELIST} -upper ${VEGAS2UPPER} -lower ${VEGAS2LOWER} -chr ${CHR} -out ${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.fromVEGAS " >> ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.sh
@@ -453,7 +453,7 @@ else
 		echo "echo \"SNP CHR BP P NOBS\" > ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.forMAGMA.txt " > ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.runMAGMA.sh
 		echo "zcat ${PARSEDDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.FINAL.txt.gz | ${SCRIPTS}/parseTable.pl --col Marker,CHR,BP,P,N | tail -n +2 | awk '{ print \$1, \$2, \$3, \$4, int(\$5) }' >> ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.forMAGMA.txt " >> ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.runMAGMA.sh
 		echo "${MAGMA} --annotate --snp-loc ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.forMAGMA.txt --gene-loc ${MAGMAGENES} --out ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.fromMAGMA.annotated " >> ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.runMAGMA.sh
-		qsub -S /bin/bash -N MAGMA.ANALYSIS.${PROJECTNAME} -hold_jid gwas.wrapper -o ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.runMAGMA.log -e ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.runMAGMA.errors -l h_vmem=${QMEMMAGMA} -l h_rt=${QRUNTIMEMAGMA} -wd ${MAGMARESULTDIR} ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.runMAGMA.sh
+# 		qsub -S /bin/bash -N MAGMA.ANALYSIS.${PROJECTNAME} -hold_jid gwas.wrapper -o ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.runMAGMA.log -e ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.runMAGMA.errors -l h_vmem=${QMEMMAGMA} -l h_rt=${QRUNTIMEMAGMA} -wd ${MAGMARESULTDIR} ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.runMAGMA.sh
 
 		echo "${MAGMA} --bfile ${MAGMAPOP} synonyms=${MAGMADBSNP} synonym-dup=drop-dup --pval ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.forMAGMA.txt ncol=NOBS --gene-annot ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.fromMAGMA.annotated.genes.annot --out ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.fromMAGMA.genesannotated " > ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.annotMAGMA.sh
 # 		qsub -S /bin/bash -N MAGMA.ANNOTATION.${PROJECTNAME} -hold_jid MAGMA.ANALYSIS.${PROJECTNAME} -o ${MAGMARESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.annotMAGMA.log -e ${MAGMARESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.annotMAGMA.errors -l h_vmem=${QMEMMAGMA} -l h_rt=${QRUNTIMEMAGMA} -wd ${MAGMARESULTDIR} ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.annotMAGMA.sh
