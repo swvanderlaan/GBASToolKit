@@ -1,10 +1,10 @@
 GBASToolKit
 ============
-#### _v1.0-beta1 "Indy"_
+#### _v1.0 "Indy"_
 [![DOI](https://zenodo.org/badge/126183592.svg)](https://zenodo.org/badge/latestdoi/126183592)
 
 
-A ToolKit to perform Gene-Based Association Studies. Check out the [wiki for more details](https://github.com/swvanderlaan/GBASToolKit/wiki). 
+**GBASToolKit**: a toolkit to perform gene-based association studies of your favourite GWAS. Check out the [wiki for more details](https://github.com/swvanderlaan/GBASToolKit/wiki). 
 
 
 --------------
