@@ -82,9 +82,9 @@ echobold "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 echobold "                          GASToolKit: A TOOLKIT FOR GENE-BASED ASSOCIATION STUDIES"
 echoitalic "                    --- prepare and perform gene-based studies using VEGAS2 or MAGMA---"
 echobold ""
-echobold "* Version:      v1.0.3"
+echobold "* Version:      v1.0.4"
 echobold ""
-echobold "* Last update:  2018-03-23"
+echobold "* Last update:  2018-08-16"
 echobold "* Written by:   Sander W. van der Laan | s.w.vanderlaan@gmail.com."
 echobold "* Description:  Prepare and perform gene-based association studies. It will do the following:"
 echobold "                - Automatically parse the summary statistics of some (meta-analysis of) GWAS."
@@ -209,7 +209,7 @@ else
 	  	echoerrorflash "                  *** Oh, computer says no! Argument not recognised. ***"
 	  	echoerror "You have the following options as reference for the quality control"
 	  	echoerror "and meta-analysis:"
-	  	echonooption " - [HM2]          HapMap2 (r27, b36, hg18)."
+	  	echonooption " - [HM2]          HapMap2 (r27, b36, hg18). Legacy."
 	  	echoerror " - [1Gp1]         1000G (phase 1, release 3, 20101123 version, updated on 20110521 "
 	  	echoerror "                  and revised on Feb/Mar 2012, b37, hg19)."
 	  	echonooption " - [1Gp3]         1000G (phase 3, release 5, 20130502 version, b37, hg19)."
@@ -400,20 +400,20 @@ else
 			if [[ $CHR -le 22 ]]; then 
 				echo "Processing chromosome ${CHR}..."
 				echo "zcat ${PARSEDDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.FINAL.txt.gz | ${SCRIPTS}/parseTable.pl --col ${VARIANTID},CHR,P | awk ' \$2==${CHR} ' | awk '{ print \$1, \$3 }' | tail -n +2 > ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.forVEGAS.txt " > ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.createVEGAS.sh
-# 				qsub -S /bin/bash -N VEGAS2.${PROJECTNAME}.chr${CHR}.create -hold_jid gwas.wrapper -o ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.createVEGAS.log -e ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.createVEGAS.errors -l h_vmem=${QMEMVEGAS} -l h_rt=${QRUNTIMEVEGAS} -wd ${VEGASRESULTDIR} ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.createVEGAS.sh
+ 				qsub -S /bin/bash -N VEGAS2.${PROJECTNAME}.chr${CHR}.create -hold_jid gwas.wrapper -o ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.createVEGAS.log -e ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.createVEGAS.errors -l h_vmem=${QMEMVEGAS} -l h_rt=${QRUNTIMEVEGAS} -wd ${VEGASRESULTDIR} ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.createVEGAS.sh
 				
 				echo "cd ${VEGASRESULTDIR}/${COHORT} " > ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.sh
 				echo "$VEGAS2 -G -snpandp ${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.forVEGAS.txt -custom ${VEGAS2POP}.chr${CHR} -glist ${VEGAS2GENELIST} -upper ${VEGAS2UPPER} -lower ${VEGAS2LOWER} -chr ${CHR} -out ${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.fromVEGAS " >> ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.sh
-# 				qsub -S /bin/bash -N VEGAS2.${PROJECTNAME}.chr${CHR} -hold_jid VEGAS2.${PROJECTNAME}.chr${CHR}.create -o ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.log -e ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.errors -l h_vmem=${QMEMVEGAS} -l h_rt=${QRUNTIMEVEGAS} -wd ${VEGASRESULTDIR} ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.sh
+ 				qsub -S /bin/bash -N VEGAS2.${PROJECTNAME}.chr${CHR} -hold_jid VEGAS2.${PROJECTNAME}.chr${CHR}.create -o ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.log -e ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.errors -l h_vmem=${QMEMVEGAS} -l h_rt=${QRUNTIMEVEGAS} -wd ${VEGASRESULTDIR} ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.sh
 		
 			elif [[ $CHR -eq 23 ]]; then  
 				echo "Processing chromosome X..."
 				echo "zcat ${PARSEDDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.FINAL.txt.gz | ${SCRIPTS}/parseTable.pl --col ${VARIANTID},CHR,P | awk ' \$2==\"X\" ' | awk '{ print \$1, \$3 }' | tail -n +2 > ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.forVEGAS.txt " > ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.createVEGAS.sh
-# 				qsub -S /bin/bash -N VEGAS2.${PROJECTNAME}.chr${CHR}.create -hold_jid gwas.wrapper -o ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.createVEGAS.log -e ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.createVEGAS.errors -l h_vmem=${QMEMVEGAS} -l h_rt=${QRUNTIMEVEGAS} -wd ${VEGASRESULTDIR} ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.createVEGAS.sh
+ 				qsub -S /bin/bash -N VEGAS2.${PROJECTNAME}.chr${CHR}.create -hold_jid gwas.wrapper -o ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.createVEGAS.log -e ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.createVEGAS.errors -l h_vmem=${QMEMVEGAS} -l h_rt=${QRUNTIMEVEGAS} -wd ${VEGASRESULTDIR} ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.createVEGAS.sh
 				
 				echo "cd ${VEGASRESULTDIR}/${COHORT} " > ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.sh
 				echo "$VEGAS2 -G -snpandp ${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.forVEGAS.txt -custom ${VEGAS2POP}.chr${CHR} -glist ${VEGAS2GENELIST} -upper ${VEGAS2UPPER} -lower ${VEGAS2LOWER} -chr ${CHR} -out ${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.fromVEGAS " >> ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.sh
-# 				qsub -S /bin/bash -N VEGAS2.${PROJECTNAME}.chr${CHR} -hold_jid VEGAS2.${PROJECTNAME}.chr${CHR}.create -o ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.log -e ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.errors -l h_vmem=${QMEMVEGAS} -l h_rt=${QRUNTIMEVEGAS} -wd ${VEGASRESULTDIR} ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.sh
+ 				qsub -S /bin/bash -N VEGAS2.${PROJECTNAME}.chr${CHR} -hold_jid VEGAS2.${PROJECTNAME}.chr${CHR}.create -o ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.log -e ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.errors -l h_vmem=${QMEMVEGAS} -l h_rt=${QRUNTIMEVEGAS} -wd ${VEGASRESULTDIR} ${VEGASRESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.chr${CHR}.runVEGAS.sh
 		
 			else
 				echo "*** ERROR *** Something is rotten in the City of Gotham; most likely a typo. Double back, please."	
@@ -453,13 +453,13 @@ else
 		echo "echo \"SNP CHR BP P NOBS\" > ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.forMAGMA.txt " > ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.runMAGMA.sh
 		echo "zcat ${PARSEDDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.FINAL.txt.gz | ${SCRIPTS}/parseTable.pl --col Marker,CHR,BP,P,N | tail -n +2 | awk '{ print \$1, \$2, \$3, \$4, int(\$5) }' >> ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.forMAGMA.txt " >> ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.runMAGMA.sh
 		echo "${MAGMA} --annotate --snp-loc ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.forMAGMA.txt --gene-loc ${MAGMAGENES} --out ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.fromMAGMA.annotated " >> ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.runMAGMA.sh
-# 		qsub -S /bin/bash -N MAGMA.ANALYSIS.${PROJECTNAME} -hold_jid gwas.wrapper -o ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.runMAGMA.log -e ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.runMAGMA.errors -l h_vmem=${QMEMMAGMA} -l h_rt=${QRUNTIMEMAGMA} -wd ${MAGMARESULTDIR} ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.runMAGMA.sh
+ 		qsub -S /bin/bash -N MAGMA.ANALYSIS.${PROJECTNAME} -hold_jid gwas.wrapper -o ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.runMAGMA.log -e ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.runMAGMA.errors -l h_vmem=${QMEMMAGMA} -l h_rt=${QRUNTIMEMAGMA} -wd ${MAGMARESULTDIR} ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.runMAGMA.sh
 
 		echo "${MAGMA} --bfile ${MAGMAPOP} synonyms=${MAGMADBSNP} synonym-dup=drop-dup --pval ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.forMAGMA.txt ncol=NOBS --gene-annot ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.fromMAGMA.annotated.genes.annot --out ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.fromMAGMA.genesannotated " > ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.annotMAGMA.sh
-# 		qsub -S /bin/bash -N MAGMA.ANNOTATION.${PROJECTNAME} -hold_jid MAGMA.ANALYSIS.${PROJECTNAME} -o ${MAGMARESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.annotMAGMA.log -e ${MAGMARESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.annotMAGMA.errors -l h_vmem=${QMEMMAGMA} -l h_rt=${QRUNTIMEMAGMA} -wd ${MAGMARESULTDIR} ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.annotMAGMA.sh
+ 		qsub -S /bin/bash -N MAGMA.ANNOTATION.${PROJECTNAME} -hold_jid MAGMA.ANALYSIS.${PROJECTNAME} -o ${MAGMARESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.annotMAGMA.log -e ${MAGMARESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.annotMAGMA.errors -l h_vmem=${QMEMMAGMA} -l h_rt=${QRUNTIMEMAGMA} -wd ${MAGMARESULTDIR} ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.annotMAGMA.sh
 
 		echo "${MAGMA} --gene-results ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.fromMAGMA.genesannotated.genes.raw --set-annot ${MAGMAGENESETS} --out ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.fromMAGMA.gsea " > ${MAGMARESULTDIR}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.gseaMAGMA.sh
-# 		qsub -S /bin/bash -N MAGMA.GSEA.${PROJECTNAME} -hold_jid MAGMA.ANNOTATION.${PROJECTNAME} -o ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.gseaMAGMA.log -e ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.gseaMAGMA.errors -l h_vmem=${QMEMMAGMA} -l h_rt=${QRUNTIMEMAGMA} -wd ${MAGMARESULTDIR} ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.gseaMAGMA.sh
+ 		qsub -S /bin/bash -N MAGMA.GSEA.${PROJECTNAME} -hold_jid MAGMA.ANNOTATION.${PROJECTNAME} -o ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.gseaMAGMA.log -e ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.gseaMAGMA.errors -l h_vmem=${QMEMMAGMA} -l h_rt=${QRUNTIMEMAGMA} -wd ${MAGMARESULTDIR} ${MAGMARESULTDIR}/${COHORT}/${COHORT}.${PROJECTNAME}.${REFERENCE}.${POPULATION}.gseaMAGMA.sh
 	done < ${GWASFILES}
 	
 	### END of if-else statement for the number of command-line arguments passed ###
