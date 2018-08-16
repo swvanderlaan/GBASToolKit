@@ -1,6 +1,6 @@
 GBASToolKit
 ============
-#### _v1.0 "Indy"_
+##### _v1.0 "Indy"_
 [![DOI](https://zenodo.org/badge/126183592.svg)](https://zenodo.org/badge/latestdoi/126183592)
 
 
