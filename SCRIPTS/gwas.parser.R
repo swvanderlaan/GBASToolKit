@@ -9,8 +9,8 @@
 cat("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     GWAS Parser -- GBASToolKit
     \n
-    * Version: v1.2.6
-    * Last edit: 2018-03-21
+    * Version: v1.2.7
+    * Last edit: 2019-04-03
     * Created by: Sander W. van der Laan | s.w.vanderlaan@gmail.com
     \n
     * Description:  Results parsing of GWAS summary statistics files used for a downstream gene-based analysis. 
@@ -548,6 +548,7 @@ if(!is.na(opt$projectdir) & !is.na(opt$datagwas) & !is.na(opt$outputdir)) {
   
   cat("\n- adding data to dataframe...")
   cat("\n  > adding the new markers; these will have the form [ chr<#>:<#>:MinorAllele_MajorAllele] ...\n")
+  # We need to add in or merge in the rsIDs from a given reference for downstream analyses
   GWASDATA_PARSED$Marker <- as.character(paste("chr",GWASDATA_RAWSELECTION$CHR,":",
                                                GWASDATA_RAWSELECTION$BP,":",
                                                GWASDATA_RAWSELECTION$MinorAllele,"_",
